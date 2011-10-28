@@ -1,0 +1,40 @@
+material grassMat
+{
+	receive_shadows on
+	technique
+	{
+		pass
+		{
+			ambient 0.500000 0.500000 0.500000 1.000000
+			diffuse 0.456160 0.514215 0.504539 1.000000
+			specular 0.500000 0.500000 0.500000 1.000000 12.500000
+			emissive 0.000000 0.000000 0.000000 1.000000
+			texture_unit
+			{
+				texture ogre_test1.jpg
+				tex_address_mode wrap
+				filtering trilinear
+			}
+		}
+	}
+}
+material towerMat
+{
+	receive_shadows on
+	technique
+	{
+		pass
+		{
+			ambient 0.500000 0.500000 0.500000 1.000000
+			diffuse 0.448000 0.448000 0.448000 1.000000
+			specular 1.000000 1.000000 1.000000 1.000000 45.250000
+			emissive 0.000000 0.000000 0.000000 1.000000
+			texture_unit
+			{
+				texture ogre_test0.jpg
+				tex_address_mode wrap
+				filtering trilinear
+			}
+		}
+	}
+}
