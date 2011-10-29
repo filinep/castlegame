@@ -154,6 +154,7 @@ public class BulletControl extends RigidBodyControl
         
         if(timeToLive-- * range <= 0 || markedForDeletion) {
             Main.get().getRootNode().detachChild(this.spatial);
+            space.removeCollisionListener(this);
             space.remove(this);
         }
     }

@@ -6,15 +6,18 @@ package mygame;
 
 import com.jme3.bullet.collision.shapes.CapsuleCollisionShape;
 import com.jme3.bullet.objects.PhysicsCharacter;
+import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 
 /**
  *
  * @author filipe
  */
-public class Player {
+public class Player extends Node {
     private PhysicsCharacter physicsControl;
     private Spatial position;
+    
+    private Weapon activeWeapon;
     
     public Player(Spatial startLoc) {
         this.physicsControl = new PhysicsCharacter(new CapsuleCollisionShape(1f, 5f), .01f);
@@ -24,6 +27,11 @@ public class Player {
         this.physicsControl.setPhysicsLocation(startLoc.getLocalTranslation());
         
         this.position = startLoc;
+        this.activeWeapon = Weapon.RANGED;
+    }
+    
+    public void useWeapon() {
+        activeWeapon.fire();
     }
 
     public void setPosition(Spatial position) {

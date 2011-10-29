@@ -37,12 +37,8 @@ public class Main extends SimpleApplication implements ActionListener {
     private BulletAppState bulletAppState;
     private Node gameLevel;
     private Vector3f walkDirection = new Vector3f();
-    private static boolean useHttp = false;
     private boolean left = false, right = false, up = false, down = false;
-    // SHOOTING STUFF:
-    boolean bulletfired;
-    
-    private Weapon weapon;
+
     private static Main instance = null;
     
     public static Main get() {
@@ -73,8 +69,10 @@ public class Main extends SimpleApplication implements ActionListener {
         geom.setMaterial(mat);
 
         rootNode.attachChild(geom);
-
-        theRootNode = rootNode;
+        
+        bulletAppState = new BulletAppState();
+        stateManager.attach(bulletAppState);
+        flyCam.setMoveSpeed(100);
 
         //sceneLoader = new SceneLoader();
         //sceneLoader.init(this);
@@ -129,10 +127,6 @@ public class Main extends SimpleApplication implements ActionListener {
         sun.setDirection(new Vector3f(-0.1f, -0.7f, -1.0f));
         rootNode.addLight(sun);
 
-
-        bulletAppState = new BulletAppState();
-        stateManager.attach(bulletAppState);
-        flyCam.setMoveSpeed(100);
         setupKeys();
 
         this.cam.setFrustumFar(10000);
@@ -160,16 +154,12 @@ public class Main extends SimpleApplication implements ActionListener {
 
         getPhysicsSpace().addAll(gameLevel);
         getPhysicsSpace().add(myPlayer.getPhysicsControl());
-        
-        //create a weapon
-        weapon = Weapon.MELEE;
     }
 
     private PhysicsSpace getPhysicsSpace() {
         return bulletAppState.getPhysicsSpace();
     }
 
-    private float total = 0;
     @Override
     public void simpleUpdate(float tpf) {
         Vector3f camDir = cam.getDirection().clone().multLocal(0.6f);
@@ -190,14 +180,6 @@ public class Main extends SimpleApplication implements ActionListener {
         //player.setWalkDirection(walkDirection);
         myPlayer.getPhysicsControl().setWalkDirection(walkDirection);
         cam.setLocation(myPlayer.getPhysicsControl().getPhysicsLocation());
-
-        if (bulletfired) {
-            total += tpf;
-            if(total >= 1f) {
-                total = 0f;
-                bulletfired = false;
-            }
-        }
     }
 
     private void setupKeys() {
@@ -244,12 +226,10 @@ public class Main extends SimpleApplication implements ActionListener {
         } else if (binding.equals("Space")) {
             myPlayer.getPhysicsControl().jump();
         }
+        
         if (binding.equals("Fire")) {
             if (value) {
-                if (!bulletfired) {
-                    weapon.fire();
-                    bulletfired = true;
-                }
+                myPlayer.useWeapon();
             }
         }
     }
