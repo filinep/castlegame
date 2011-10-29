@@ -7,7 +7,6 @@ import com.jme3.scene.shape.Box;
 import com.jme3.bullet.BulletAppState;
 import com.jme3.app.SimpleApplication;
 import com.jme3.bullet.PhysicsSpace;
-import com.jme3.bullet.collision.shapes.SphereCollisionShape;
 import com.jme3.bullet.control.RigidBodyControl;
 import com.jme3.input.KeyInput;
 import com.jme3.input.controls.ActionListener;
@@ -19,7 +18,6 @@ import com.jme3.math.Vector3f;
 import com.jme3.renderer.RenderManager;
 import com.jme3.renderer.queue.RenderQueue.ShadowMode;
 import com.jme3.scene.Node;
-import com.jme3.scene.shape.Sphere;
 import com.jme3.shadow.PssmShadowRenderer;
 
 /**
@@ -42,15 +40,22 @@ public class Main extends SimpleApplication implements ActionListener {
     private static boolean useHttp = false;
     private boolean left = false, right = false, up = false, down = false;
     // SHOOTING STUFF:
-    Sphere bulletsphere;
-    Node bulletnode;
-    Geometry geombullet;
-    BulletControl bulletcontrol;
     boolean bulletfired;
-    int bulletcounter;
+    
+    private Weapon weapon;
+    private static Main instance = null;
+    
+    public static Main get() {
+        if(instance == null)
+            instance = new Main();
+        return instance;
+    }
+    
+    private Main() {
+    }
 
     public static void main(String[] args) {
-        Main app = new Main();
+        Main app = Main.get();
         app.start();
     }
 
@@ -155,12 +160,16 @@ public class Main extends SimpleApplication implements ActionListener {
 
         getPhysicsSpace().addAll(gameLevel);
         getPhysicsSpace().add(myPlayer.getPhysicsControl());
+        
+        //create a weapon
+        weapon = Weapon.MELEE;
     }
 
     private PhysicsSpace getPhysicsSpace() {
         return bulletAppState.getPhysicsSpace();
     }
 
+    private float total = 0;
     @Override
     public void simpleUpdate(float tpf) {
         Vector3f camDir = cam.getDirection().clone().multLocal(0.6f);
@@ -183,9 +192,9 @@ public class Main extends SimpleApplication implements ActionListener {
         cam.setLocation(myPlayer.getPhysicsControl().getPhysicsLocation());
 
         if (bulletfired) {
-            if ((bulletcounter-- <= 0) || bulletcontrol.collidedWithMap) {
-                rootNode.detachChild(geombullet);
-                getPhysicsSpace().remove(bulletcontrol);
+            total += tpf;
+            if(total >= 1f) {
+                total = 0f;
                 bulletfired = false;
             }
         }
@@ -238,30 +247,9 @@ public class Main extends SimpleApplication implements ActionListener {
         if (binding.equals("Fire")) {
             if (value) {
                 if (!bulletfired) {
-                    SphereCollisionShape sphereShape =
-                            new SphereCollisionShape(.2f);
-                    bulletsphere = new Sphere(3, 4, 1);
-                    //pbullet = new PhysicsCharacter(new SphereCollisionShape(.5f), 0f);
-                    //bulletnode = new Node();
-                    geombullet = new Geometry("Bullet", bulletsphere);
-                    Material mat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
-                    mat.setTexture("ColorMap", assetManager.loadTexture("Textures/circuit1.jpg"));
-                    geombullet.setMaterial(mat);
-                    //bulletnode.attachChild(geombullet);
-                    bulletcontrol = new BulletControl(sphereShape, 1f, bulletAppState);
-                    getPhysicsSpace().add(bulletcontrol);
-                    geombullet.addControl(bulletcontrol);
-                    rootNode.attachChild(geombullet);
-                    //bulletcontrol.setKinematic(true);
-                    bulletcontrol.setGravity(Vector3f.ZERO);
-                    bulletcontrol.setPhysicsLocation(cam.getLocation().add(cam.getDirection().mult(2f)));
-                    bulletcontrol.setLinearVelocity(cam.getDirection().mult(50f));
+                    weapon.fire();
                     bulletfired = true;
-                    bulletcounter = 50;
                 }
-
-
-
             }
         }
     }
@@ -281,5 +269,9 @@ public class Main extends SimpleApplication implements ActionListener {
      */
     public void debug(String str) {
         sysout.setText(str);
+    }
+
+    public BulletAppState getBulletAppState() {
+        return bulletAppState;
     }
 }

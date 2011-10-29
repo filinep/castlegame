@@ -4,7 +4,6 @@
  */
 package mygame;
 
-import com.jme3.bullet.BulletAppState;
 import com.jme3.bullet.PhysicsSpace;
 import com.jme3.bullet.collision.PhysicsCollisionEvent;
 import com.jme3.bullet.collision.PhysicsCollisionListener;
@@ -14,9 +13,7 @@ import com.jme3.export.JmeExporter;
 import com.jme3.export.JmeImporter;
 import com.jme3.renderer.RenderManager;
 import com.jme3.renderer.ViewPort;
-import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
-import com.jme3.scene.control.Control;
 import java.io.IOException;
 
 /**
@@ -26,11 +23,14 @@ import java.io.IOException;
 public class BulletControl extends RigidBodyControl
         implements PhysicsCollisionListener {
 
-    public boolean collidedWithMap = false;
+    private boolean markedForDeletion = false;
+    private int timeToLive = 25;
+    private int range;
 
-    public BulletControl(CollisionShape shape, float mass, BulletAppState bulletAppState) {
+    public BulletControl(CollisionShape shape, float mass, int range) {
         super(shape, mass);
-        bulletAppState.getPhysicsSpace().addCollisionListener(this);
+        this.range = range;
+        Main.get().getBulletAppState().getPhysicsSpace().addCollisionListener(this);
     }
 
     public void prePhysicsTick(PhysicsSpace space, float f) {
@@ -48,20 +48,44 @@ public class BulletControl extends RigidBodyControl
             if (a.getName().equals("Map")) {
                 // node = (Node)event.getNodeA();
                 /** ... do something with the node ... */
-                collidedWithMap = true;
+                markedForDeletion = true;
             } else if (b != null) {
                 if (b.getName().equals("Map")) {
                     //Node node = (Node)event.getNodeB();
                     /** ... do something with the node ... */
-                    collidedWithMap = true;
+                    markedForDeletion = true;
                 }
             }
         }
     }
 
     @Override
-    public Control cloneForSpatial(Spatial spatial) {
-        return super.cloneForSpatial(spatial);
+    public BulletControl cloneForSpatial(Spatial spatial) {
+        BulletControl control = new BulletControl(collisionShape, mass, range);
+        control.setAngularFactor(getAngularFactor());
+        control.setAngularSleepingThreshold(getAngularSleepingThreshold());
+        control.setCcdMotionThreshold(getCcdMotionThreshold());
+        control.setCcdSweptSphereRadius(getCcdSweptSphereRadius());
+        control.setCollideWithGroups(getCollideWithGroups());
+        control.setCollisionGroup(getCollisionGroup());
+        control.setDamping(getLinearDamping(), getAngularDamping());
+        control.setFriction(getFriction());
+        control.setGravity(getGravity());
+        control.setKinematic(isKinematic());
+        control.setKinematicSpatial(isKinematicSpatial());
+        control.setLinearSleepingThreshold(getLinearSleepingThreshold());
+        control.setPhysicsLocation(getPhysicsLocation(null));
+        control.setPhysicsRotation(getPhysicsRotationMatrix(null));
+        control.setRestitution(getRestitution());
+
+        if (mass > 0) {
+            control.setAngularVelocity(getAngularVelocity());
+            control.setLinearVelocity(getLinearVelocity());
+        }
+        control.setApplyPhysicsLocal(isApplyPhysicsLocal());
+
+        control.setSpatial(spatial);
+        return control;
     }
 
     @Override
@@ -127,6 +151,11 @@ public class BulletControl extends RigidBodyControl
     @Override
     public void update(float tpf) {
         super.update(tpf);
+        
+        if(timeToLive-- * range <= 0 || markedForDeletion) {
+            Main.get().getRootNode().detachChild(this.spatial);
+            space.remove(this);
+        }
     }
 
     @Override
