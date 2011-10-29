@@ -3,15 +3,12 @@ package mygame;
 import com.jme3.font.BitmapText;
 import com.jme3.material.Material;
 import com.jme3.scene.Geometry;
-import com.jme3.scene.Spatial;
 import com.jme3.scene.shape.Box;
 import com.jme3.bullet.BulletAppState;
 import com.jme3.app.SimpleApplication;
 import com.jme3.bullet.PhysicsSpace;
-import com.jme3.bullet.collision.shapes.CapsuleCollisionShape;
 import com.jme3.bullet.collision.shapes.SphereCollisionShape;
 import com.jme3.bullet.control.RigidBodyControl;
-import com.jme3.bullet.objects.PhysicsCharacter;
 import com.jme3.input.KeyInput;
 import com.jme3.input.controls.ActionListener;
 import com.jme3.input.controls.KeyTrigger;
@@ -36,12 +33,11 @@ public class Main extends SimpleApplication implements ActionListener {
     // MAIN STUFF:
     public Node theRootNode;
     private Node placeholder, scene, floor, tower;
-    private Spatial playerPos;
+    private Player myPlayer;
     private static BitmapText sysout;//dubug to player screen
     // TESTQ3 STUFF:
     private BulletAppState bulletAppState;
     private Node gameLevel;
-    private PhysicsCharacter player;
     private Vector3f walkDirection = new Vector3f();
     private static boolean useHttp = false;
     private boolean left = false, right = false, up = false, down = false;
@@ -63,10 +59,9 @@ public class Main extends SimpleApplication implements ActionListener {
         pssmRenderer = new PssmShadowRenderer(assetManager, 1024, 4);
         pssmRenderer.setDirection(new Vector3f(-1, -1, -1).normalizeLocal());
         viewPort.addProcessor(pssmRenderer);
-
+        
         Box b = new Box(Vector3f.ZERO, 1, 1, 1);
         Geometry geom = new Geometry("Box", b);
-        geom.updateModelBound();
 
         Material mat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
         mat.setColor("m_Color", ColorRGBA.Blue);
@@ -99,20 +94,25 @@ public class Main extends SimpleApplication implements ActionListener {
         gameLevel = (Node) getAssetManager().loadModel(
                 "Scenes/aScene/basic.j3o");
         gameLevel.setName("Map");
-        playerPos = gameLevel.getChild("playerPos");
         floor = (Node) gameLevel.getChild("grass");
         tower = (Node) gameLevel.getChild("tower");
-
+        
         gameLevel.setShadowMode(ShadowMode.CastAndReceive);
         //attach the two meshes to placeholder 
         //placeholder.attachChild(floor);
         //placeholder.attachChild(tower);
+        
+        /**
+         * Create the player with the starting player position at "playerPos" 
+         * from the scene
+         */
+        myPlayer = new Player(gameLevel.getChild("playerPos"));
 
         /* 
          * get the position of playerPos and print it's x value to the screen using the 
          * debug function defined in Main.  
          */
-        Vector3f playervector = playerPos.getLocalTranslation();
+        Vector3f playervector = myPlayer.getPosition().getLocalTranslation();
         String str = "playervectorEmpty x, y, z is ";
         str += Float.toString(playervector.x) + ", ";
         str += Float.toString(playervector.y) + ", ";
@@ -151,21 +151,10 @@ public class Main extends SimpleApplication implements ActionListener {
         // add a physics control, it will generate a MeshCollisionShape based on the gameLevel
         gameLevel.addControl(new RigidBodyControl(0));
 
-        player = new PhysicsCharacter(new CapsuleCollisionShape(1f, 5f), .01f);
-        player.setJumpSpeed(20);
-        player.setFallSpeed(30);
-        player.setGravity(30);
-
-        playerPos = gameLevel.getChild("playerPos");
-        Vector3f startLoc = playerPos.getLocalTranslation();
-        //startLoc.y -= 5f;
-        //startLoc.mult(10f);
-        player.setPhysicsLocation(startLoc);
-
         rootNode.attachChild(gameLevel);
 
         getPhysicsSpace().addAll(gameLevel);
-        getPhysicsSpace().add(player);
+        getPhysicsSpace().add(myPlayer.getPhysicsControl());
     }
 
     private PhysicsSpace getPhysicsSpace() {
@@ -189,8 +178,9 @@ public class Main extends SimpleApplication implements ActionListener {
         if (down) {
             walkDirection.addLocal(camDir.negate());
         }
-        player.setWalkDirection(walkDirection);
-        cam.setLocation(player.getPhysicsLocation());
+        //player.setWalkDirection(walkDirection);
+        myPlayer.getPhysicsControl().setWalkDirection(walkDirection);
+        cam.setLocation(myPlayer.getPhysicsControl().getPhysicsLocation());
 
         if (bulletfired) {
             if ((bulletcounter-- <= 0) || bulletcontrol.collidedWithMap) {
@@ -243,7 +233,7 @@ public class Main extends SimpleApplication implements ActionListener {
                 down = false;
             }
         } else if (binding.equals("Space")) {
-            player.jump();
+            myPlayer.getPhysicsControl().jump();
         }
         if (binding.equals("Fire")) {
             if (value) {
@@ -279,11 +269,6 @@ public class Main extends SimpleApplication implements ActionListener {
     @Override
     public void simpleRender(RenderManager rm) {
         //TODO: add render code
-    }
-
-    //getter methods 
-    public Vector3f getPlayerPos() {
-        return playerPos.getLocalTranslation();
     }
 
     public Vector3f getBoxPos() {
