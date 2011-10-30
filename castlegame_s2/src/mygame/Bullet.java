@@ -21,9 +21,9 @@ import com.jme3.scene.shape.Sphere;
  * @author filipe
  */
 public enum Bullet {
-    MELEE(ColorRGBA.Blue, new Sphere(3, 4, 1), (CollisionShape) (new SphereCollisionShape(.2f)), 1),
+    MELEE(ColorRGBA.Red, new Sphere(3, 4, 1), (CollisionShape) (new SphereCollisionShape(.2f)), 1),
     RANGED(ColorRGBA.Brown, new Cylinder(10, 5, .5f, 10f, true, false), new CylinderCollisionShape(new Vector3f(.25f, 5f, .25f)), 10),
-    MAGIC(ColorRGBA.Yellow, new Sphere(3, 4, 1), new SphereCollisionShape(.2f), 5);
+    FIREBALL(ColorRGBA.Yellow, new Sphere(3, 4, 1), new SphereCollisionShape(.2f), 5);
     
     private final Geometry geometry;
     private final BulletControl bulletControl;
