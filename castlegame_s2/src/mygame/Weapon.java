@@ -4,6 +4,8 @@
  */
 package mygame;
 
+import com.jme3.math.Vector3f;
+
 /**
  *
  * @author filipe
@@ -23,7 +25,7 @@ public enum Weapon {
         this.currentAmmo = ammo;
     }
     
-    public void fire() {
+    public void fire(Vector3f from, Vector3f to) {
         boolean canFire = false;
         for(int i = 0; i < maxBulletsOnScreen; ++i) {
             if(Main.get().getRootNode().getChild("Bullet" + i) == null) {
@@ -32,8 +34,10 @@ public enum Weapon {
         }
         
         if((currentAmmo == INFINITY || currentAmmo > 0) && canFire) {
-            bullet.fire(currentAmmo % maxBulletsOnScreen);
-            currentAmmo--;
+            bullet.fire(currentAmmo % maxBulletsOnScreen, from, to);
+            
+            if(currentAmmo != INFINITY)
+                currentAmmo--;
         }
     }
     

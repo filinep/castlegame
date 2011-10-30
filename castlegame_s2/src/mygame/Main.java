@@ -61,6 +61,8 @@ public class Main extends SimpleApplication implements ActionListener {
         pssmRenderer.setDirection(new Vector3f(-1, -1, -1).normalizeLocal());
         viewPort.addProcessor(pssmRenderer);
         
+        viewPort.setBackgroundColor(ColorRGBA.Cyan);
+        
         Box b = new Box(Vector3f.ZERO, 1, 1, 1);
         Geometry geom = new Geometry("Box", b);
 

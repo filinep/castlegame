@@ -6,6 +6,8 @@ package mygame;
 
 import com.jme3.bullet.collision.shapes.CapsuleCollisionShape;
 import com.jme3.bullet.objects.PhysicsCharacter;
+import com.jme3.math.Vector3f;
+import com.jme3.renderer.Camera;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 
@@ -31,7 +33,11 @@ public class Player extends Node {
     }
     
     public void useWeapon() {
-        activeWeapon.fire();
+        Camera camera = Main.get().getCamera();
+        Vector3f from = camera.getLocation().add(camera.getDirection());
+        Vector3f to = camera.getLocation().add(camera.getDirection().mult(2f));
+        
+        activeWeapon.fire(from, to);
     }
 
     public void setPosition(Spatial position) {

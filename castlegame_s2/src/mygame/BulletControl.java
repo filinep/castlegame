@@ -24,13 +24,13 @@ public class BulletControl extends RigidBodyControl
         implements PhysicsCollisionListener {
 
     private boolean markedForDeletion = false;
-    private int timeToLive = 25;
-    private int range;
+    private float timeToLive;
+    private final static float SCALING_FACTOR = 3f;
 
-    public BulletControl(CollisionShape shape, float mass, int range) {
+    public BulletControl(CollisionShape shape, float mass, float range) {
         super(shape, mass);
-        this.range = range;
         Main.get().getBulletAppState().getPhysicsSpace().addCollisionListener(this);
+        this.timeToLive = range * SCALING_FACTOR;
     }
 
     public void prePhysicsTick(PhysicsSpace space, float f) {
@@ -61,7 +61,7 @@ public class BulletControl extends RigidBodyControl
 
     @Override
     public BulletControl cloneForSpatial(Spatial spatial) {
-        BulletControl control = new BulletControl(collisionShape, mass, range);
+        BulletControl control = new BulletControl(collisionShape, mass, timeToLive);
         control.setAngularFactor(getAngularFactor());
         control.setAngularSleepingThreshold(getAngularSleepingThreshold());
         control.setCcdMotionThreshold(getCcdMotionThreshold());
@@ -152,7 +152,8 @@ public class BulletControl extends RigidBodyControl
     public void update(float tpf) {
         super.update(tpf);
         
-        if(timeToLive-- * range <= 0 || markedForDeletion) {
+        timeToLive -= this.getLinearVelocity().length() * tpf;
+        if(timeToLive <= 0 || markedForDeletion) {
             Main.get().getRootNode().detachChild(this.spatial);
             space.removeCollisionListener(this);
             space.remove(this);
