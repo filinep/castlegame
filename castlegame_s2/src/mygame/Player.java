@@ -10,6 +10,8 @@ import com.jme3.input.controls.ActionListener;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.Camera;
 import com.jme3.scene.Spatial;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  *
@@ -19,7 +21,9 @@ public class Player implements ActionListener {
     private PhysicsCharacter physicsControl;
     private boolean left = false, right = false, up = false, down = false;
     private Weapon activeWeapon;
+    private List<Weapon> weapons;
     private Vector3f walkDirection;
+    private int health;
     
     public Player(Spatial startLoc) {
         this.physicsControl = new PhysicsCharacter(new CapsuleCollisionShape(1f, 5f), .01f);
@@ -29,7 +33,9 @@ public class Player implements ActionListener {
         this.physicsControl.setPhysicsLocation(startLoc.getLocalTranslation());
         
         this.walkDirection = new Vector3f();
+        this.weapons = Arrays.asList(Weapon.values());
         this.activeWeapon = Weapon.RANGED;
+        this.health = 100;
     }
     
     public void useWeapon() {
@@ -60,6 +66,14 @@ public class Player implements ActionListener {
         if (binding.equals("Fire") && value) {
             useWeapon();
         }
+        
+        //change weapon with mouse wheel
+        if (binding.equals("WeaponNext")) {
+            activeWeapon = weapons.get((weapons.indexOf(activeWeapon) + 1) % weapons.size());
+        } else if (binding.equals("WeaponPrev")) {
+            //added weapons.size() because of funky mod behavior with negative numbers
+            activeWeapon = weapons.get((weapons.size() + weapons.indexOf(activeWeapon) - 1) % weapons.size());
+        }
     }
     
     public void update(float tpf) {
@@ -83,5 +97,13 @@ public class Player implements ActionListener {
 
         physicsControl.setWalkDirection(walkDirection);
         camera.setLocation(physicsControl.getPhysicsLocation());
+    }
+
+    public int getHealth() {
+        return health;
+    }
+
+    public Weapon getWeapon() {
+        return activeWeapon;
     }
 }

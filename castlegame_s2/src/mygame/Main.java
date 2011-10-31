@@ -1,5 +1,6 @@
 package mygame;
 
+import com.jme3.font.BitmapFont;
 import com.jme3.font.BitmapText;
 import com.jme3.material.Material;
 import com.jme3.scene.Geometry;
@@ -8,10 +9,13 @@ import com.jme3.bullet.BulletAppState;
 import com.jme3.app.SimpleApplication;
 import com.jme3.bullet.PhysicsSpace;
 import com.jme3.input.KeyInput;
+import com.jme3.input.MouseInput;
 import com.jme3.input.controls.KeyTrigger;
+import com.jme3.input.controls.MouseAxisTrigger;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector3f;
 import com.jme3.shadow.PssmShadowRenderer;
+import com.jme3.system.AppSettings;
 
 /**
  * test
@@ -25,6 +29,7 @@ public class Main extends SimpleApplication {
     // TESTQ3 STUFF:
     private BulletAppState bulletAppState;
     private Scene gameLevel;
+    private HUD hud;
     
     private static Main instance = null;
     
@@ -70,13 +75,17 @@ public class Main extends SimpleApplication {
         flyCam.setMoveSpeed(100);
         
         //set clipping distance
-        this.cam.setFrustumFar(10000);
+        cam.setFrustumFar(10000);
 
         //initialize level/scene
         gameLevel = new Scene();
                 
         //create the player with the starting player position at "playerPos" from the scene
         myPlayer = new Player(gameLevel.getChild("playerPos"));
+        
+        //setup hud
+        hud = new HUD();
+        guiNode.attachChild(hud);
         
         //setup key bindings for player actions
         setupKeys();
@@ -96,6 +105,7 @@ public class Main extends SimpleApplication {
     @Override
     public void simpleUpdate(float tpf) {
         myPlayer.update(tpf);
+        hud.update();
     }
 
     private void setupKeys() {
@@ -105,12 +115,10 @@ public class Main extends SimpleApplication {
         inputManager.addMapping("Downs", new KeyTrigger(KeyInput.KEY_S));
         inputManager.addMapping("Space", new KeyTrigger(KeyInput.KEY_SPACE));
         inputManager.addMapping("Fire", new KeyTrigger(KeyInput.KEY_F));
-        inputManager.addListener(myPlayer, "Lefts");
-        inputManager.addListener(myPlayer, "Rights");
-        inputManager.addListener(myPlayer, "Ups");
-        inputManager.addListener(myPlayer, "Downs");
-        inputManager.addListener(myPlayer, "Space");
-        inputManager.addListener(myPlayer, "Fire");
+        inputManager.addMapping("WeaponNext", new MouseAxisTrigger(MouseInput.AXIS_WHEEL, true));
+        inputManager.addMapping("WeaponPrev", new MouseAxisTrigger(MouseInput.AXIS_WHEEL, false));
+        
+        inputManager.addListener(myPlayer, "Lefts", "Rights", "Ups", "Downs", "Space", "Fire", "WeaponNext", "WeaponPrev");
     }
 
     /** 
@@ -123,5 +131,17 @@ public class Main extends SimpleApplication {
 
     public BulletAppState getBulletAppState() {
         return bulletAppState;
+    }
+
+    public BitmapFont getGuiFont() {
+        return guiFont;
+    }
+
+    public Player getPlayer() {
+        return myPlayer;
+    }
+
+    public AppSettings getSettings() {
+        return settings;
     }
 }
