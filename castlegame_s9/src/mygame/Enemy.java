@@ -6,12 +6,10 @@ package mygame;
 
 import com.jme3.bullet.PhysicsSpace;
 import com.jme3.bullet.collision.shapes.CapsuleCollisionShape;
-import com.jme3.bullet.control.CharacterControl;
 import com.jme3.bullet.objects.PhysicsCharacter;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector3f;
-import com.jme3.renderer.Camera;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Mesh;
 import com.jme3.scene.Spatial;
@@ -26,99 +24,66 @@ import java.util.List;
 public class Enemy extends GameEntity {
 
     public enum ENEMYTYPE {
-
         FROG, SKELETON, IMP
     };
     
     private static int idTicker = 0;
     
-    // taken from player:
     private EnemyControl physicsControl;
-    private boolean left = false, right = false, up = false, down = false;
     private int activeWeapon;
     private List<Weapon> weapons = new ArrayList<Weapon>();
     private Vector3f walkDirection;
     private int health;
-    private final int MAGICEFFECT_MAX = 10;
-    private MagicEffect[] effect = new MagicEffect[MAGICEFFECT_MAX];
-    private int currentEffect = -1;
-    private int lightCounter = 0;
-    
-    // taken from bullet:
-    private static int number = 0;
-    private Geometry geometry = null;
-    private EnemyControl enemyControl = null;
-    private float speed = 50f;
-    private int damage = 0;
-    private ENEMYTYPE enemyType = ENEMYTYPE.SKELETON;
 
-    public Enemy(GameLogic gl, ENEMYTYPE bt, Spatial startLoc) {
+    private Geometry geometry = null;
+    private ENEMYTYPE enemyType;
+    private float shootDelay;
+
+    public Enemy(GameLogic gl, ENEMYTYPE enemyType, Spatial startLoc) {
         super(gl);
-        type = TYPE.Enemy;
+        
+        this.type = TYPE.Enemy;
+        
         this.physicsControl = new EnemyControl(this, new CapsuleCollisionShape(1f, 5f), .01f);
         this.physicsControl.setJumpSpeed(20);
         this.physicsControl.setFallSpeed(30);
         this.physicsControl.setGravity(30);
-        Vector3f loc = new Vector3f(30f, 30f, 30f);
-        this.physicsControl.setPhysicsLocation(loc);
-        //Camera cam = Main.get().getCamera();
-        //float[] angles = {0f, -FastMath.HALF_PI, 0f};
-        //cam.setRotation(new Quaternion(angles));
 
         this.walkDirection = new Vector3f();
-        //weapons.add(new Weapon(game, Weapon.WeaponType.RANGED));
-        //.add(new Weapon(game, Weapon.WeaponType.MELEE));
-        //weapons.add(new Weapon(game, Weapon.WeaponType.FIREBALL));
-        //weapons.add(new Weapon(game, Weapon.WeaponType.HEALING));
-        //weapons.add(new Weapon(game, Weapon.WeaponType.LIGHTING));
-
         this.activeWeapon = 0;
         this.health = 100;
+        this.shootDelay = 2f;
 
-        // taken from bullet:
-        switch (bt) {
+        switch (enemyType) {
             case FROG:
-                initModel(
-                        ColorRGBA.Green, (Mesh) (new Box(1f, 1f, 1f)),
-                        1);
+                initModel(ColorRGBA.Green, new Box(1f, 1f, 1f), 1);
+                enemyType = ENEMYTYPE.FROG;
                 break;
             case SKELETON:
-                initModel(
-                        ColorRGBA.White, (new Box(3f, 6f, 3f)), 10);
+                initModel(ColorRGBA.White, new Box(3f, 6f, 3f), 10);
+                enemyType = ENEMYTYPE.SKELETON;
+                weapons.add(new Weapon(game, Weapon.WeaponType.MELEE));
                 break;
             case IMP:
-                initModel(
-                        ColorRGBA.Red, (new Box(1f, 1f, 1f)), 5);
+                initModel(ColorRGBA.Red, new Box(1f, 1f, 1f), 5);
+                enemyType = ENEMYTYPE.IMP;
+                weapons.add(new Weapon(game, Weapon.WeaponType.MELEE));
                 break;
             default:
                 ;
         }
         
-        //Vector3f loc = new Vector3f(30f, 30f, 30f);
         this.physicsControl.setPhysicsLocation(startLoc.getWorldTranslation());
-        
-        //Geometry newBullet = geometry.clone(true);
-        //BulletControl newBulletControl = bulletControl.cloneForSpatial(this, newBullet);
-        //Main.get().getBulletAppState().getPhysicsSpace().add(newBulletControl);
-        //newBullet.setName("Skeleton" + idTicker++);
-        //newBullet.addControl(newBulletControl);
-        //Main.get().getRootNode().attachChild(newBullet);
-
-        //newBulletControl.setGravity(Vector3f.ZERO);
-
-        //Vector3f z = to.subtract(from).normalize();
-        //Vector3f x = new Vector3f(z.z, 0f, -z.x).normalize();
-        //Vector3f y = z.cross(x);
-
-        //newBulletControl.setPhysicsRotation(new Quaternion().fromAxes(x, y, z));
-        //newBulletControl.setPhysicsLocation(from);
-        //newBulletControl.setLinearVelocity(z.mult(speed));
 
         birth();
     }
     
     public PhysicsSpace phys() {
         return Main.get().getBulletAppState().getPhysicsSpace();
+    }
+
+    public ENEMYTYPE getEnemyType() {
+        return enemyType;
     }
 
     public void initModel(ColorRGBA color, Mesh mesh, int range) {
@@ -137,80 +102,48 @@ public class Enemy extends GameEntity {
     }
 
     public void useWeapon() {
-        Camera camera = Main.get().getCamera();
-        Vector3f from = camera.getLocation().add(camera.getDirection());
-        Vector3f to = camera.getLocation().add(camera.getDirection().mult(2f));
+        Vector3f playerPos = game.getPlayer().getPhysicsControl().getPhysicsLocation();
+        Vector3f from = physicsControl.getPhysicsLocation().add(playerPos.subtract(physicsControl.getPhysicsLocation()).normalize().mult(20f));
+        Vector3f to = game.getPlayer().getPhysicsControl().getPhysicsLocation();
 
-        //weapons.get(activeWeapon).fire(from, to);
+        weapons.get(activeWeapon).fire(from, to);
     }
 
     public PhysicsCharacter getPhysicsControl() {
         return physicsControl;
     }
 
-    public void onAction(String binding, boolean value, float tpf) {
-        if (binding.equals("Lefts")) {
-            left = value;
-        } else if (binding.equals("Rights")) {
-            right = value;
-        } else if (binding.equals("Ups")) {
-            up = value;
-        } else if (binding.equals("Downs")) {
-            down = value;
-        } else if (binding.equals("Space")) {
-            physicsControl.jump();
-        }
-
-        if (binding.equals("WeaponFire") && value) {
-            useWeapon();
-        }
-
-        //change weapon with mouse wheel
-        if (binding.equals("WeaponNext") || binding.equals("WeaponNext2")) {
-            activeWeapon++;
-            if (activeWeapon >= Weapon.TOTALWEAPONS) {
-                activeWeapon = 0;
-            }
-        } else if (binding.equals("WeaponPrev") || binding.equals("WeaponPrev2")) {
-            activeWeapon--;
-            if (activeWeapon < 0) {
-                activeWeapon = Weapon.TOTALWEAPONS - 1;
-            }
-        }
-    }
-
     public void update(float tpf) {
-        Camera camera = Main.get().getCamera();
-        Vector3f camDir = camera.getDirection().clone().multLocal(.6f);
-        Vector3f camLeft = camera.getLeft().clone().multLocal(.4f);
-        walkDirection.set(0, 0, 0);
-
-        if (left) {
-            walkDirection.addLocal(camLeft);
+        //get player position and distance to player
+        Vector3f playerPos = game.getPlayer().getPhysicsControl().getPhysicsLocation();
+        float distToPlayer = playerPos.distance(physicsControl.getPhysicsLocation());
+        walkDirection.set(0f, 0f, 0f);
+   
+        //countdown till enemy can shoot again
+        if(shootDelay > 0f) {
+            shootDelay -= tpf;
         }
-        if (right) {
-            walkDirection.addLocal(camLeft.negate());
-        }
-        if (up) {
-            walkDirection.addLocal(camDir);
-        }
-        if (down) {
-            walkDirection.addLocal(camDir.negate());
-        }
-
-        physicsControl.setWalkDirection(walkDirection);
-        camera.setLocation(physicsControl.getPhysicsLocation());
-
-        for (int ix = 0; ix < MAGICEFFECT_MAX; ix++) {
-            if (effect[ix] != null) {
-                effect[ix].update();
-                if (effect[ix].done) {
-                    effect[ix] = null;
-                }
+        
+        //TODO: change these distances (100f and 200f) to use the range of the weapon
+        if (distToPlayer < 100f) {
+            //only shoot after at least one second since last shot
+            //TODO: change 1f for different delays
+            if(shootDelay < 0f) {
+                useWeapon();
+                shootDelay = 1f;
             }
-
+            
+            //make enemy face player
+            physicsControl.setViewDirection(playerPos.subtract(physicsControl.getPhysicsLocation()));
+        } else if (distToPlayer < 200f) {
+            //if player in *sight* (read, near) but out of range then set move direction
+            //TODO: change enemy speed by multiplying normalized vector with move speed
+            //default move speed is one, which is pretty fast
+            walkDirection.set(playerPos.subtract(physicsControl.getPhysicsLocation()).normalize());
         }
-
+        
+        //make enemy move
+        physicsControl.setWalkDirection(walkDirection);
     }
 
     public int getHealth() {

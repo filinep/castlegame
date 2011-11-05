@@ -70,11 +70,10 @@ public class MagicEffect extends GameEntity{
         Main.get().getRootNode().attachChild(mbulletnode);
         start = System.currentTimeMillis();
         birth();
-    }
+    }    
     
-    
-    public void update ()
-            {
+    @Override
+    public void update (float tpf) {
     if ((start + 2000) < (System.currentTimeMillis()))
         if (theEffect != null)
         {

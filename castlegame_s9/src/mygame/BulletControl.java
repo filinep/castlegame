@@ -13,7 +13,6 @@ import com.jme3.export.JmeExporter;
 import com.jme3.export.JmeImporter;
 import com.jme3.renderer.RenderManager;
 import com.jme3.renderer.ViewPort;
-import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import java.io.IOException;
 
@@ -53,15 +52,11 @@ public class BulletControl extends RigidBodyControl
     
     private void checkCollision(Spatial a, Spatial b) {
         if (b == this.spatial) {
-            //Node node = (Node)event.getNodeB();
-            /** ... do something with the node ... */
             if (a != null) {
-                if (a.getName().equals("Map")) {
-                    System.out.println("Collided with" + a.getName());
-                }
+                //Delete the bullet no matter what it hits
+                System.out.println("Collided with " + a.getName());
                 markedForDeletion = true;
             }
-
         }
     }
 

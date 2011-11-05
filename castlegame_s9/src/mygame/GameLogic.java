@@ -14,7 +14,9 @@ import com.jme3.input.controls.MouseButtonTrigger;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Spatial;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  *
@@ -23,9 +25,9 @@ import java.util.List;
 public class GameLogic {
 
     Player player;
-    List<Enemy> enemies = new ArrayList<Enemy>();
-    List<Bullet> bullets = new ArrayList<Bullet>();
-    List<MagicEffect> effects = new ArrayList<MagicEffect>();
+    List<Enemy> enemies = new CopyOnWriteArrayList<Enemy>();
+    List<Bullet> bullets = new CopyOnWriteArrayList<Bullet>();
+    List<MagicEffect> effects = new CopyOnWriteArrayList<MagicEffect>();
     Scene gameLevel;
     private HUD hud;
     Main main = Main.get();
@@ -39,9 +41,6 @@ public class GameLogic {
     }
 
     public void init(String fname) {
-        // init GameLogic references to enums:
-        Weapon.game = this;
-
         //initialize level/scene
         gameLevel = new Scene(fname);
 
@@ -70,7 +69,6 @@ public class GameLogic {
     }
     
     public void spawnEnemies() {
-
         GameLogic game = this;
         // check for skeletons:
         String skeleton = "skeleton";
@@ -84,8 +82,7 @@ public class GameLogic {
                 System.out.println(search);
                 Enemy e = new Enemy(game, Enemy.ENEMYTYPE.SKELETON, item);
             }
-        }
-       
+        }       
     }
 
     public void setupKeys() {
@@ -110,9 +107,15 @@ public class GameLogic {
 
     public void update(float tpf) {
         player.update(tpf);
-        for (int ix = 0; ix < effects.size(); ix++) {
-            effects.get(ix).update();
+        
+        for (MagicEffect m : effects) {
+            m.update(tpf);
         }
+        
+        for(Enemy e : enemies) {
+            e.update(tpf);
+        }
+        
         hud.update();
     }
 

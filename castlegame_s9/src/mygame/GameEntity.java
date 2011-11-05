@@ -23,7 +23,7 @@ public class GameEntity {
         game.add(this);
     }
     
-    public void update() {}
+    public void update(float tpf) {}
     public void impact() {}
     public void damage(int dhp) {}
     public void kill() {

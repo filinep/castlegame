@@ -23,15 +23,15 @@ public class Weapon extends GameEntity {
         MELEE, RANGED, FIREBALL, HEALING, LIGHTING
     };
     private final int INFINITY = -1; //Used for weapons with unlimited ammo
-    String name;
+    private String name;
     private Bullet.BULLETTYPE bullet;
     boolean isMagic = false;
     private int currentAmmo; //Number of bullets left
     private int maxBulletsOnScreen = 100;
-    public static GameLogic game;
 
     Weapon(GameLogic gl, WeaponType wtype) {
         super(gl);
+        
         switch (wtype) {
             case MELEE:
                 init("MELEE", Bullet.BULLETTYPE.MELEE, -1, false);

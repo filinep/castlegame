@@ -41,16 +41,18 @@ public class Player extends GameEntity implements ActionListener {
         this.physicsControl.setFallSpeed(30);
         this.physicsControl.setGravity(30);
         this.physicsControl.setPhysicsLocation(startLoc.getWorldTranslation());
+        
         Camera cam = Main.get().getCamera();
         float[] angles = {0f, FastMath.HALF_PI, 0f};
         cam.setRotation(new Quaternion(angles));
 
         this.walkDirection = new Vector3f();
-        weapons.add(new Weapon(game, Weapon.WeaponType.RANGED));
-        weapons.add(new Weapon(game, Weapon.WeaponType.MELEE));
-        weapons.add(new Weapon(game, Weapon.WeaponType.FIREBALL));
-        weapons.add(new Weapon(game, Weapon.WeaponType.HEALING));
-        weapons.add(new Weapon(game, Weapon.WeaponType.LIGHTING));
+        
+        this.weapons.add(new Weapon(game, Weapon.WeaponType.RANGED));
+        this.weapons.add(new Weapon(game, Weapon.WeaponType.MELEE));
+        this.weapons.add(new Weapon(game, Weapon.WeaponType.FIREBALL));
+        this.weapons.add(new Weapon(game, Weapon.WeaponType.HEALING));
+        this.weapons.add(new Weapon(game, Weapon.WeaponType.LIGHTING));
         
         this.activeWeapon = 0;
         this.health = 100;
@@ -119,7 +121,7 @@ public class Player extends GameEntity implements ActionListener {
         physicsControl.setWalkDirection(walkDirection);
         camera.setLocation(physicsControl.getPhysicsLocation());
 
-        for (int ix = 0; ix < MAGICEFFECT_MAX; ix++) {
+        /*for (int ix = 0; ix < MAGICEFFECT_MAX; ix++) {
             if (effect[ix] != null) {
                 effect[ix].update();
                 if (effect[ix].done) {
@@ -127,7 +129,7 @@ public class Player extends GameEntity implements ActionListener {
                 }
             }
 
-        }
+        }*/
        
     }
 
