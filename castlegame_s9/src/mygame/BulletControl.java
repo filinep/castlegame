@@ -47,33 +47,22 @@ public class BulletControl extends RigidBodyControl
     public void collision(PhysicsCollisionEvent event) {
         Spatial a = event.getNodeA();
         Spatial b = event.getNodeB();
-        if (a == this.spatial) {
-
-            // node = (Node)event.getNodeA();
-            /** ... do something with the node ... */
-            if (b != null) {
-                if (b.getName().equals("Map")) {
-
-                    System.out.println(b.getName());
-                    markedForDeletion = true;
-                }
-
-            }
-        }
+        checkCollision(a, b);
+        checkCollision(b, a);
+    }
+    
+    private void checkCollision(Spatial a, Spatial b) {
         if (b == this.spatial) {
-
             //Node node = (Node)event.getNodeB();
             /** ... do something with the node ... */
             if (a != null) {
                 if (a.getName().equals("Map")) {
-
-                    System.out.println(a.getName());
-                    markedForDeletion = true;
+                    System.out.println("Collided with" + a.getName());
                 }
+                markedForDeletion = true;
             }
 
         }
-
     }
 
     public BulletControl cloneForSpatial(Bullet bull, Spatial spatial) {
