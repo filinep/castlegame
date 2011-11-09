@@ -1,16 +1,13 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package mygame;
 
 import com.jme3.bullet.PhysicsSpace;
+import com.jme3.scene.Node;
 
 /**
  *
  * @author scott
  */
-public class GameEntity {
+public class GameEntity extends Node {
     public enum TYPE {Player, Enemy, Bullet, MagicEffect, Item, HUD};
             
     public TYPE type;
@@ -23,13 +20,16 @@ public class GameEntity {
     
     public void birth() {
         game.add(this);
+        game.getRootNode().attachChild(this);
     }
     
     public void update(float tpf) {}
     public void impact() {}
     public void damage(int dhp) {}
+    
     public void kill() {
         game.remove(this);
+        game.getRootNode().detachChild(this);
     }
     
     public PhysicsSpace getPhysicsSpace() {

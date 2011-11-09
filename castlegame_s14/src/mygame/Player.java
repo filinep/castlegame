@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package mygame;
 
 import com.jme3.bullet.collision.shapes.CapsuleCollisionShape;
@@ -12,7 +8,6 @@ import com.jme3.math.FastMath;
 import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.Camera;
-import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,13 +24,7 @@ public class Player extends GameEntity implements ActionListener {
     private int activeWeapon;
     private List<Weapon> weapons = new ArrayList<Weapon>();
     private Vector3f walkDirection;
-    private Node playerNode;
     private int health;
-    private final int MAGICEFFECT_MAX = 10;
-    private MagicEffect[] effect = new MagicEffect[MAGICEFFECT_MAX];
-    private int currentEffect = -1;
-    
-    private int lightCounter = 0;
     
     public Player(GameLogic gl, Spatial startLoc) {
         super (gl);
@@ -45,11 +34,9 @@ public class Player extends GameEntity implements ActionListener {
         this.physicsControl.setFallSpeed(30);
         this.physicsControl.setGravity(30);
         
-        playerNode = new Node("Player");
-        playerNode.addControl(physicsControl);
+        setName("Player");
+        addControl(physicsControl);
         this.physicsControl.setPhysicsLocation(startLoc.getWorldTranslation());
-        Main.get().getRootNode().attachChild(playerNode);
-        
         
         Camera cam = Main.get().getCamera();
         float[] angles = {0f, FastMath.HALF_PI, 0f};
@@ -65,13 +52,15 @@ public class Player extends GameEntity implements ActionListener {
         
         this.activeWeapon = 0;
         this.health = 100;
+        
+        birth();
     }
 
     public void useWeapon() {
         Camera cam = Main.get().getCamera();
         Vector3f playerPos = physicsControl.getPhysicsLocation();
-        Vector3f from = physicsControl.getPhysicsLocation().add(cam.getDirection().normalize().mult(10f));
-        Vector3f to = physicsControl.getPhysicsLocation().add(cam.getDirection().normalize().mult(40f));
+        Vector3f from = playerPos.add(cam.getDirection().normalize().mult(2f));
+        Vector3f to = playerPos.add(cam.getDirection().normalize().mult(4f));
 
         weapons.get(activeWeapon).fire(from, to);
     }
@@ -93,22 +82,23 @@ public class Player extends GameEntity implements ActionListener {
             physicsControl.jump();
         }
 
-        if (binding.equals("WeaponFire") && value) {
+        if (binding.equals("Fire") && value) {
             useWeapon();
         }
 
         //change weapon with mouse wheel
-        if (binding.equals("WeaponNext")||binding.equals("WeaponNext2")) {
+        if (binding.equals("WeaponNext")) {
             activeWeapon++;
             if (activeWeapon >= Weapon.TOTALWEAPONS)
                 activeWeapon = 0;
-        } else if (binding.equals("WeaponPrev")||binding.equals("WeaponPrev2")) {
+        } else if (binding.equals("WeaponPrev")) {
             activeWeapon--;
             if (activeWeapon < 0)
                 activeWeapon = Weapon.TOTALWEAPONS-1;
             }
     }
 
+    @Override
     public void update(float tpf) {
         Camera camera = Main.get().getCamera();
         Vector3f camDir = camera.getDirection().clone().multLocal(.6f);
@@ -130,17 +120,6 @@ public class Player extends GameEntity implements ActionListener {
 
         physicsControl.setWalkDirection(walkDirection);
         camera.setLocation(physicsControl.getPhysicsLocation());
-
-        /*for (int ix = 0; ix < MAGICEFFECT_MAX; ix++) {
-            if (effect[ix] != null) {
-                effect[ix].update();
-                if (effect[ix].done) {
-                    effect[ix] = null;
-                }
-            }
-
-        }*/
-       
     }
 
     public int getHealth() {
@@ -149,5 +128,13 @@ public class Player extends GameEntity implements ActionListener {
     
     public Weapon getWeapon() {
         return weapons.get(activeWeapon);
+    }
+    
+    @Override
+    public void damage(int dhp) {
+        health -= dhp;
+        
+        game.getHud().setPlayerDamaged();
+        //TODO check for death
     }
 }

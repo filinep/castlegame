@@ -18,6 +18,7 @@ import com.jme3.input.controls.KeyTrigger;
 import com.jme3.input.controls.MouseAxisTrigger;
 import com.jme3.input.controls.MouseButtonTrigger;
 import com.jme3.math.Vector3f;
+import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -119,17 +120,15 @@ public class GameLogic extends AbstractAppState {
         inputManager.addMapping("Ups", new KeyTrigger(KeyInput.KEY_W));
         inputManager.addMapping("Downs", new KeyTrigger(KeyInput.KEY_S));
         inputManager.addMapping("Space", new KeyTrigger(KeyInput.KEY_SPACE));
-        inputManager.addMapping("Fire", new KeyTrigger(KeyInput.KEY_F));
-        inputManager.addMapping("WeaponNext2", new KeyTrigger(KeyInput.KEY_LBRACKET));
-        inputManager.addMapping("WeaponPrev2", new KeyTrigger(KeyInput.KEY_RBRACKET));
-        inputManager.addMapping("WeaponNext", new MouseAxisTrigger(MouseInput.AXIS_WHEEL, true));
-        inputManager.addMapping("WeaponPrev", new MouseAxisTrigger(MouseInput.AXIS_WHEEL, false));
-        inputManager.addMapping("WeaponFire", new MouseButtonTrigger(MouseInput.BUTTON_LEFT));
+        inputManager.addMapping("Fire", new KeyTrigger(KeyInput.KEY_F),
+                                        new MouseButtonTrigger(MouseInput.BUTTON_LEFT));
+        inputManager.addMapping("WeaponNext", new MouseAxisTrigger(MouseInput.AXIS_WHEEL, true),
+                                              new KeyTrigger(KeyInput.KEY_LBRACKET));
+        inputManager.addMapping("WeaponPrev", new MouseAxisTrigger(MouseInput.AXIS_WHEEL, false),
+                                              new KeyTrigger(KeyInput.KEY_RBRACKET));
 
         inputManager.addListener(player, "Lefts", "Rights", "Ups", "Downs");
-        inputManager.addListener(player, "Space", "Fire", "WeaponNext");
-        inputManager.addListener(player, "WeaponPrev", "WeaponFire",
-                "WeaponNext2", "WeaponPrev2");
+        inputManager.addListener(player, "Space", "Fire", "WeaponNext", "WeaponPrev");
     }
 
     @Override
@@ -144,7 +143,7 @@ public class GameLogic extends AbstractAppState {
             e.update(tpf);
         }
 
-        hud.update();
+        hud.update(tpf);
     }
 
     public void remove(GameEntity entity) {
@@ -217,6 +216,14 @@ public class GameLogic extends AbstractAppState {
 
     public Player getPlayer() {
         return player;
+    }
+
+    public HUD getHud() {
+        return hud;
+    }
+    
+    public Node getRootNode() {
+        return main.getRootNode();
     }
     // BORN: ------------------
     // LIFE: ------------------

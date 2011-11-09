@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package mygame;
 
 import com.jme3.effect.ParticleEmitter;
@@ -15,18 +11,17 @@ import com.jme3.scene.Node;
  *
  * @author scott
  */
-public class MagicEffect extends GameEntity{
-    long start;
-    Node theEffect;
-    boolean done = false;
+public class MagicEffect extends GameEntity {
+    private long start;
+    private boolean done = false;
     
-    MagicEffect(GameLogic gl, Vector3f loc)
-    {
+    MagicEffect(GameLogic gl, Vector3f loc) {
         super(gl);
+
         type = TYPE.MagicEffect;
-        Node mbulletnode = new Node("Magic Effect");
-        mbulletnode.setLocalTranslation(loc);
-        theEffect = mbulletnode;
+        setName("Magic Effect");
+        setLocalTranslation(loc);
+
         ParticleEmitter fire =
                 new ParticleEmitter("Emitter", ParticleMesh.Type.Triangle, 30);
         Material mat_red = new Material(Main.get().getAssetManager(),
@@ -46,7 +41,7 @@ public class MagicEffect extends GameEntity{
         fire.setHighLife(3f);
         fire.getParticleInfluencer().setVelocityVariation(0.3f);
 
-        mbulletnode.attachChild(fire);
+        this.attachChild(fire);
 
         ParticleEmitter debris =
                 new ParticleEmitter("Debris", ParticleMesh.Type.Triangle, 10);
@@ -63,21 +58,18 @@ public class MagicEffect extends GameEntity{
         debris.setStartColor(ColorRGBA.White);
         debris.setGravity(0, 6, 0);
         debris.getParticleInfluencer().setVelocityVariation(.60f);
-        mbulletnode.attachChild(debris);
+       
+        this.attachChild(debris);
 
         debris.emitAllParticles();
 
-        Main.get().getRootNode().attachChild(mbulletnode);
         start = System.currentTimeMillis();
         birth();
-    }    
-    
+    }
+
     @Override
     public void update (float tpf) {
-    if ((start + 2000) < (System.currentTimeMillis()))
-        if (theEffect != null)
-        {
-            Main.get().getRootNode().detachChild(theEffect);
+        if ((start + 2000) < (System.currentTimeMillis())) {
             kill();
         }
     }

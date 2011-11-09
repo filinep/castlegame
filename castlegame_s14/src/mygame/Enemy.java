@@ -1,20 +1,13 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package mygame;
 
 import com.jme3.bullet.collision.shapes.CapsuleCollisionShape;
+import com.jme3.bullet.control.CharacterControl;
 import com.jme3.bullet.objects.PhysicsCharacter;
 import com.jme3.light.PointLight;
-import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.queue.RenderQueue.ShadowMode;
-import com.jme3.scene.Geometry;
-import com.jme3.scene.Mesh;
 import com.jme3.scene.Spatial;
-import com.jme3.scene.shape.Box;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,14 +23,13 @@ public class Enemy extends GameEntity {
     
     private static int idTicker = 0;
     
-    private EnemyControl physicsControl;
+    private CharacterControl physicsControl;
     private int activeWeapon;
     private List<Weapon> weapons = new ArrayList<Weapon>();
     private Vector3f walkDirection;
     private int health;
 
     private Spatial model = null;
-    private Geometry geometry = null;
     private ENEMYTYPE enemyType;
     private float shootDelay;
 
@@ -45,30 +37,29 @@ public class Enemy extends GameEntity {
         super(gl);
         
         this.type = TYPE.Enemy;
+        this.enemyType = enemyType;
         
-        this.physicsControl = new EnemyControl(this, new CapsuleCollisionShape(1f, 5f), .01f);
-        this.physicsControl.setJumpSpeed(20);
-        this.physicsControl.setFallSpeed(30);
-        this.physicsControl.setGravity(30);
-
         this.walkDirection = new Vector3f();
         this.activeWeapon = 0;
         this.health = 100;
         this.shootDelay = 2f;
+        
+        setName(enemyType.name().toLowerCase() + idTicker++);
 
+        //TODO: check these numbers (radius and height of physics object)
         switch (enemyType) {
             case FROG:
-                initModel(ColorRGBA.Green, new Box(1f, 1f, 1f), 1);
-                enemyType = ENEMYTYPE.FROG;
+                initModel("Models/skele11/skele11.j3o", .5f, 1f);
+                health = 15;
                 break;
             case SKELETON:
-                initModel(ColorRGBA.White, new Box(3f, 6f, 3f), 10);
-                enemyType = ENEMYTYPE.SKELETON;
+                initModel("Models/skele11/skele11.j3o", 1f, 5f);
+                health = 75;
                 weapons.add(new Weapon(game, Weapon.WeaponType.MELEE));
                 break;
             case IMP:
-                initModel(ColorRGBA.Red, new Box(1f, 1f, 1f), 5);
-                enemyType = ENEMYTYPE.IMP;
+                initModel("Models/skele11/skele11.j3o", 1f, 2.5f);
+                health = 115;
                 weapons.add(new Weapon(game, Weapon.WeaponType.MELEE));
                 break;
             default:
@@ -84,26 +75,33 @@ public class Enemy extends GameEntity {
         return enemyType;
     }
 
-    public void initModel(ColorRGBA color, Mesh mesh, int range) {
-        Material material = new Material(Main.get().getAssetManager(), "Common/MatDefs/Misc/Unshaded.j3md");
+    public final void initModel(String modelName, float radius, float height) {
+        //TODO: hopefully material is already on model
+        
+        /*Material material = new Material(Main.get().getAssetManager(), "Common/MatDefs/Misc/Unshaded.j3md");
         material.setTexture("ColorMap", Main.get().getAssetManager().loadTexture("Textures/circuit1.jpg"));
-        material.setColor("Color", color);
-
-        this.geometry = new Geometry("Skeleton" + idTicker++, mesh);
-        this.geometry.setMaterial(material);
+        material.setColor("Color", color);*/
         
-        model = Main.get().getAssetManager().loadModel("Models/skele11/skele11.j3o");
-        model.addControl(physicsControl);
+        //TODO: since bullet collision is dont in BulletControl we might not need EnemyControl
+        //physicsControl = new EnemyControl(this, new CapsuleCollisionShape(radius, height), .01f);
+        physicsControl = new CharacterControl(new CapsuleCollisionShape(radius, height), .01f);
+        physicsControl.setJumpSpeed(20);
+        physicsControl.setFallSpeed(30);
+        physicsControl.setGravity(30);
         
+        model = Main.get().getAssetManager().loadModel(modelName);
+        addControl(physicsControl);
+        
+        //TODO: the level should have enough lighting
         PointLight light = new PointLight();
         light.setColor(ColorRGBA.White);
         light.setRadius(20f);
+        
         model.addLight(light);
         model.setShadowMode(ShadowMode.CastAndReceive);
         
         getPhysicsSpace().add(physicsControl);
-        
-        Main.get().getRootNode().attachChild(model);
+        attachChild(model);
     }
 
     public void useWeapon() {
@@ -120,6 +118,8 @@ public class Enemy extends GameEntity {
 
     @Override
     public void update(float tpf) {
+        //TODO factor this out to AIProfiles or something
+        
         //get player position and distance to player
         Vector3f playerPos = game.getPlayer().getPhysicsControl().getPhysicsLocation();
         float distToPlayer = playerPos.distance(physicsControl.getPhysicsLocation());
@@ -158,5 +158,16 @@ public class Enemy extends GameEntity {
 
     public Weapon getWeapon() {
         return weapons.get(activeWeapon);
+    }
+
+    @Override
+    public void damage(int dhp) {
+        super.damage(dhp);
+        
+        health -= dhp;
+        
+        if (health <= 0) {
+            kill();
+        }
     }
 }

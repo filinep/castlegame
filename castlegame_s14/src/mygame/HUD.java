@@ -1,25 +1,23 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package mygame;
 
 import com.jme3.font.BitmapFont;
 import com.jme3.font.BitmapText;
 import com.jme3.math.ColorRGBA;
-import com.jme3.scene.Node;
+import com.jme3.ui.Picture;
 
 /**
  *
  * @author filipe
  */
-public class HUD extends Node {
+public class HUD extends GameEntity {
+    private static float DAMAGED_TIME = 3f;
     private BitmapText health;
     private BitmapText weapon;
-    GameLogic game;
+    private Picture damageIndicator;
+    private float playerDamaged = 0f;
     
     public HUD(GameLogic gl) {
-        game = gl;
+        super(gl);
         BitmapFont guiFont = Main.get().getGuiFont();
         
         health = new BitmapText(guiFont, false);          
@@ -36,11 +34,29 @@ public class HUD extends Node {
                        " AMMO = " + game.getPlayer().getWeapon().getCurrentAmmo());
         weapon.setLocalTranslation(10, Main.get().getSettings().getHeight() - health.getHeight(), 0);
         this.attachChild(weapon);
+        
+        damageIndicator = new Picture("DamageIndicator");
+        damageIndicator.setImage(Main.get().getAssetManager(), "Textures/damageIndicator.png", true);
+        damageIndicator.setWidth(Main.get().getSettings().getWidth());
+        damageIndicator.setHeight(Main.get().getSettings().getHeight());
+        damageIndicator.setPosition(0, 0);
+        this.attachChild(damageIndicator);
     }
     
-    public void update() {
-        weapon.setText("Weapon: " + game.getPlayer().getWeapon().getName() +
-                       " AMMO = " + game.getPlayer().getWeapon().getCurrentAmmo());
+    public void setPlayerDamaged() {
+        playerDamaged = DAMAGED_TIME;
+    }
+    
+    @Override
+    public void update(float tpf) {
+        weapon.setText("Weapon: " + game.getPlayer().getWeapon().getName().toLowerCase() +
+                       "\nAMMO = " + game.getPlayer().getWeapon().getCurrentAmmo());
         health.setText("Health: " + game.getPlayer().getHealth());
+        
+        damageIndicator.getMaterial().setColor("Color", 
+                                new ColorRGBA(1f, 0f, 0f, .5f - (DAMAGED_TIME - playerDamaged) / (2*DAMAGED_TIME)));
+        
+        if (playerDamaged > 0)
+            playerDamaged -= tpf;
     }
 }

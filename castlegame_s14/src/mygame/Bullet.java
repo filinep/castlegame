@@ -22,7 +22,8 @@ public class Bullet extends GameEntity {
 
         MELEE, RANGED, FIREBALL, HEALING, LIGHTING
     };
-    private static int number = 0;
+    
+    private static int id = 0;
     private Geometry geometry = null;
     private BulletControl bulletControl = null;
     private float speed = 50f;
@@ -32,49 +33,48 @@ public class Bullet extends GameEntity {
     Bullet(GameLogic gl, BULLETTYPE bt, int name, Vector3f from, Vector3f to, boolean magic) {
         super(gl);
         type = TYPE.Bullet;
+        bulletType = bt;
+        
         switch (bt) {
             case MELEE:
                 init(
                         ColorRGBA.Red, (Mesh) (new Sphere(3, 4, 1)),
                         (CollisionShape) (new SphereCollisionShape(.2f)), 1);
+                damage = 50;
                 break;
             case RANGED:
                 init(
                         ColorRGBA.Brown, new Cylinder(10, 5, .5f, 10f, true, false), new CylinderCollisionShape(new Vector3f(.25f, 5f, .25f)), 10);
+                damage = 10;
                 break;
             case FIREBALL:
                 init(
                         ColorRGBA.Yellow, new Sphere(3, 4, 1), new SphereCollisionShape(.2f), 5);
+                damage = 25;
                 break;
             case HEALING:
                 init(
                         ColorRGBA.Blue, new Sphere(8, 8, 3), new SphereCollisionShape(.2f), 3);
+                damage = -10; //???
                 break;
             case LIGHTING:
                 init(
                         ColorRGBA.Green, new Sphere(8, 8, 3), new SphereCollisionShape(.2f), 3);
+                damage = 0; //???
                 break;
             default:
                 ;
         }
-        Geometry newBullet = geometry.clone(true);
-        BulletControl newBulletControl = bulletControl.cloneForSpatial(this, newBullet);
-        getPhysicsSpace().add(newBulletControl);
-        newBullet.setName("Bullet");
-        newBullet.addControl(newBulletControl);
-        Main.get().getRootNode().attachChild(newBullet);
 
-        newBulletControl.setGravity(Vector3f.ZERO);
-
+        birth();
+        
         Vector3f z = to.subtract(from).normalize();
         Vector3f x = new Vector3f(z.z, 0f, -z.x).normalize();
         Vector3f y = z.cross(x);
 
-        newBulletControl.setPhysicsRotation(new Quaternion().fromAxes(x, y, z));
-        newBulletControl.setPhysicsLocation(from);
-        newBulletControl.setLinearVelocity(z.mult(speed));
-        
-        birth();
+        bulletControl.setPhysicsRotation(new Quaternion().fromAxes(x, y, z));
+        bulletControl.setPhysicsLocation(from);
+        bulletControl.setLinearVelocity(z.mult(speed));
     }
 
     Bullet(GameLogic gl, ColorRGBA color, Mesh mesh, CollisionShape physicsShape, int range) {
@@ -87,15 +87,24 @@ public class Bullet extends GameEntity {
         init(color, mesh, physicsShape, range);
     }
 
-    public void init(ColorRGBA color, Mesh mesh, CollisionShape physicsShape, int range) {
+    public final void init(ColorRGBA color, Mesh mesh, CollisionShape physicsShape, int range) {
         Material material = new Material(Main.get().getAssetManager(), "Common/MatDefs/Misc/Unshaded.j3md");
         material.setTexture("ColorMap", Main.get().getAssetManager().loadTexture("Textures/circuit1.jpg"));
         material.setColor("Color", color);
 
-        this.geometry = new Geometry("Bullet", mesh);
-        this.geometry.setMaterial(material);
+        geometry = new Geometry("Bullet" + id++, mesh);
+        geometry.setMaterial(material);
 
-        this.bulletControl = new BulletControl(this, physicsShape, 1f, range);
+        bulletControl = new BulletControl(this, physicsShape, 1f, range);
+        bulletControl.setGravity(Vector3f.ZERO);
+        
+        getPhysicsSpace().add(bulletControl);
+        geometry.addControl(bulletControl);
+        attachChild(geometry);
+    }
+    
+    public int getDamage() {
+        return damage;
     }
 
 }

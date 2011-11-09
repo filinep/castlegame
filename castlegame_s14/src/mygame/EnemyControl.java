@@ -4,7 +4,6 @@
  */
 package mygame;
 
-import com.jme3.bullet.PhysicsSpace;
 import com.jme3.bullet.collision.PhysicsCollisionEvent;
 import com.jme3.bullet.collision.PhysicsCollisionListener;
 import com.jme3.bullet.collision.shapes.CollisionShape;
@@ -27,14 +26,6 @@ public class EnemyControl extends CharacterControl implements PhysicsCollisionLi
         enemy.getPhysicsSpace().addCollisionListener(this);
     }
 
-    public void prePhysicsTick(PhysicsSpace space, float f) {
-        // apply state changes ...
-    }
-
-    public void physicsTick(PhysicsSpace space, float f) {
-        // poll game state ...
-    }
-
     public void collision(PhysicsCollisionEvent event) {
         Spatial a = event.getNodeA();
         Spatial b = event.getNodeB();
@@ -43,9 +34,9 @@ public class EnemyControl extends CharacterControl implements PhysicsCollisionLi
     }
     
     private void checkCollision(Spatial a, Spatial b) {
-        if (b == this.spatial) {
+        if (b == this.spatial && !markedForDeletion) {
             if (a != null) {
-                if (a.getName().equals("Bullet")) {
+                if (a.getName().toLowerCase().contains("bullet")) {
                     markedForDeletion = true;
                 }
             }
@@ -57,8 +48,7 @@ public class EnemyControl extends CharacterControl implements PhysicsCollisionLi
         super.update(tpf);
 
         if (markedForDeletion) {
-            Main.get().getRootNode().detachChild(this.spatial);
-            if (this != null) {
+            if (this != null && space != null) {
                 space.removeCollisionListener(this);
                 space.remove(this);
                 enemy.kill();

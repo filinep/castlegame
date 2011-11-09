@@ -22,8 +22,8 @@ public class Weapon extends GameEntity {
 
         MELEE, RANGED, FIREBALL, HEALING, LIGHTING
     };
+    
     private final int INFINITY = -1; //Used for weapons with unlimited ammo
-    private String name;
     private Bullet.BULLETTYPE bullet;
     boolean isMagic = false;
     private int currentAmmo; //Number of bullets left
@@ -31,6 +31,7 @@ public class Weapon extends GameEntity {
 
     Weapon(GameLogic gl, WeaponType wtype) {
         super(gl);
+        type = TYPE.Item;
         
         switch (wtype) {
             case MELEE:
@@ -52,11 +53,12 @@ public class Weapon extends GameEntity {
             default:
                 ;
         }
-        //fire (from, to);
+        
+        birth();
     }
 
     public void init(String n, Bullet.BULLETTYPE b, int ammo, boolean magic) {
-        this.name = n;
+        setName(n);
         this.bullet = b;
         this.currentAmmo = ammo;
         this.isMagic = magic;
@@ -72,6 +74,7 @@ public class Weapon extends GameEntity {
             boolean canFire = false;
             //This determines if there are any bullets currently on the screen
 
+            //TODO: might not need this
             for (int i = 0; i < maxBulletsOnScreen; ++i) {
                 if (Main.get().getRootNode().getChild("Bullet" + i) == null) {
                     canFire = true;
@@ -96,50 +99,8 @@ public class Weapon extends GameEntity {
     public int getCurrentAmmo() {
         return currentAmmo;
     }
-
-    public void runHealingEffect(Vector3f from) {
-        ParticleEmitter fire =
-                new ParticleEmitter("Emitter", ParticleMesh.Type.Triangle, 30);
-        Material mat_red = new Material(Main.get().getAssetManager(),
-                "Common/MatDefs/Misc/Particle.j3md");
-        mat_red.setTexture("Texture", Main.get().getAssetManager().loadTexture(
-                "Textures/debris.png"));
-        fire.setMaterial(mat_red);
-        fire.setImagesX(2);
-        fire.setImagesY(2); // 2x2 texture animation
-        fire.setEndColor(new ColorRGBA(1f, 0f, 0f, 1f));   // red
-        fire.setStartColor(new ColorRGBA(1f, 1f, 0f, 0.5f)); // yellow
-        fire.getParticleInfluencer().setInitialVelocity(new Vector3f(0, 2, 0));
-        fire.setStartSize(5f);
-        fire.setEndSize(0.1f);
-        fire.setGravity(0, 0, 0);
-        fire.setLowLife(1f);
-        fire.setHighLife(3f);
-        fire.getParticleInfluencer().setVelocityVariation(0.3f);
-        fire.setLocalTranslation(from);
-        Main.get().getRootNode().attachChild(fire);
-
-        ParticleEmitter debris =
-                new ParticleEmitter("Debris", ParticleMesh.Type.Triangle, 10);
-        Material debris_mat = new Material(Main.get().getAssetManager(),
-                "Common/MatDefs/Misc/Particle.j3md");
-        debris_mat.setTexture("Texture", Main.get().getAssetManager().loadTexture(
-                "Textures/debris.png"));
-        debris.setMaterial(debris_mat);
-        debris.setImagesX(3);
-        debris.setImagesY(3); // 3x3 texture animation
-        debris.setRotateSpeed(4);
-        debris.setSelectRandomImage(true);
-        debris.getParticleInfluencer().setInitialVelocity(new Vector3f(0, 4, 0));
-        debris.setStartColor(ColorRGBA.White);
-        debris.setGravity(0, 6, 0);
-        debris.getParticleInfluencer().setVelocityVariation(.60f);
-        Main.get().getRootNode().attachChild(debris);
-        debris.setLocalTranslation(from);
-        debris.emitAllParticles();
-    }
-
-    public String getName() {
-        return name;
+    
+    public boolean isMagic() {
+        return isMagic;
     }
 }
