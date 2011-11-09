@@ -4,7 +4,6 @@
  */
 package mygame;
 
-import com.jme3.bullet.PhysicsSpace;
 import com.jme3.bullet.collision.shapes.CapsuleCollisionShape;
 import com.jme3.bullet.objects.PhysicsCharacter;
 import com.jme3.light.PointLight;
@@ -80,10 +79,6 @@ public class Enemy extends GameEntity {
 
         birth();
     }
-    
-    public PhysicsSpace phys() {
-        return Main.get().getBulletAppState().getPhysicsSpace();
-    }
 
     public ENEMYTYPE getEnemyType() {
         return enemyType;
@@ -106,7 +101,7 @@ public class Enemy extends GameEntity {
         model.addLight(light);
         model.setShadowMode(ShadowMode.CastAndReceive);
         
-        phys().add(physicsControl);
+        getPhysicsSpace().add(physicsControl);
         
         Main.get().getRootNode().attachChild(model);
     }
@@ -123,6 +118,7 @@ public class Enemy extends GameEntity {
         return physicsControl;
     }
 
+    @Override
     public void update(float tpf) {
         //get player position and distance to player
         Vector3f playerPos = game.getPlayer().getPhysicsControl().getPhysicsLocation();

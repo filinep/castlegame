@@ -4,6 +4,8 @@
  */
 package mygame;
 
+import com.jme3.bullet.PhysicsSpace;
+
 /**
  *
  * @author scott
@@ -30,4 +32,7 @@ public class GameEntity {
         game.remove(this);
     }
     
+    public PhysicsSpace getPhysicsSpace() {
+        return game.getPhysicsSpace();
+    }
 }

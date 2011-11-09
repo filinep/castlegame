@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package mygame;
 
 import com.jme3.bullet.collision.shapes.CollisionShape;
@@ -63,7 +59,7 @@ public class Bullet extends GameEntity {
         }
         Geometry newBullet = geometry.clone(true);
         BulletControl newBulletControl = bulletControl.cloneForSpatial(this, newBullet);
-        Main.get().getBulletAppState().getPhysicsSpace().add(newBulletControl);
+        getPhysicsSpace().add(newBulletControl);
         newBullet.setName("Bullet");
         newBullet.addControl(newBulletControl);
         Main.get().getRootNode().attachChild(newBullet);

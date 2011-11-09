@@ -31,7 +31,7 @@ public class BulletControl extends RigidBodyControl
     public BulletControl(Bullet bull, CollisionShape shape, float mass, float range) {
         super(shape, mass);
         bullet = bull;
-        Main.get().getBulletAppState().getPhysicsSpace().addCollisionListener(this);
+        bullet.getPhysicsSpace().addCollisionListener(this);
         this.timeToLive = range * SCALING_FACTOR;
     }
 

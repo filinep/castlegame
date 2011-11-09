@@ -10,23 +10,23 @@ import com.jme3.scene.Spatial;
  *
  * @author scott
  */
-public class EnemySpawner {
-    GameLogic game;
+public class EnemySpawner extends GameEntity {
+    private Enemy.ENEMYTYPE enemyType;
     
-    EnemySpawner() {}
+    public EnemySpawner(GameLogic game, Enemy.ENEMYTYPE type) {
+        super(game);
+    }
     
-    void init(GameLogic gl, Scene gameLevel)
-    {
-        game = gl;
-        // check for skeletons:
-        String skeleton = "skeleton";
-        for (int ix = 0; ix < 100; ix++)
-        {
-            String search = skeleton + ix;
-            Spatial item = gameLevel.getChild(search);
-            if (item != null)
-            {
-                Enemy e = new Enemy(game, Enemy.ENEMYTYPE.SKELETON, item);
+    public void init(Scene gameLevel) {
+        // check for enemies:
+        String name = enemyType.name().toLowerCase();
+        
+        for (int ix = 0; ix < 100; ix++) {
+            String search = name + ix;
+            Spatial item = game.getGameLevel().getChild(search);
+            
+            if (item != null) {
+                Enemy e = new Enemy(game, enemyType, item);
             }
         }
         

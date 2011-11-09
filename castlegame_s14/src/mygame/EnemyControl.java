@@ -24,7 +24,7 @@ public class EnemyControl extends CharacterControl implements PhysicsCollisionLi
         super(shape, stepHeight);
         
         this.enemy = enemy;
-        Main.get().getBulletAppState().getPhysicsSpace().addCollisionListener(this);
+        enemy.getPhysicsSpace().addCollisionListener(this);
     }
 
     public void prePhysicsTick(PhysicsSpace space, float f) {
