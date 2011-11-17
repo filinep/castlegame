@@ -8,7 +8,7 @@ import com.jme3.scene.Node;
  * @author scott
  */
 public class GameEntity extends Node {
-    public enum TYPE {Player, Enemy, Bullet, MagicEffect, Item, HUD};
+    public enum TYPE {Player, Enemy, Bullet, MagicEffect, Item, Other};
             
     public TYPE type;
     
@@ -16,6 +16,11 @@ public class GameEntity extends Node {
     
     public GameEntity(GameLogic gl) {
         game = gl;
+    }
+    
+    public GameEntity(GameEntity other) {
+        this.game = other.game;
+        this.type = other.type;
     }
     
     public void birth() {

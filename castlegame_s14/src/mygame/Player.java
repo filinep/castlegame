@@ -1,5 +1,6 @@
 package mygame;
 
+import mygame.weapon.Weapon;
 import com.jme3.bullet.collision.shapes.CapsuleCollisionShape;
 import com.jme3.bullet.control.CharacterControl;
 import com.jme3.bullet.objects.PhysicsCharacter;

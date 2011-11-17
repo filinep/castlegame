@@ -1,13 +1,12 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package mygame;
 
+import mygame.weapon.Bullet;
+import mygame.weapon.MagicEffect;
+import mygame.enemy.Enemy;
 import com.jme3.app.Application;
-import com.jme3.app.SimpleApplication;
 import com.jme3.app.state.AbstractAppState;
 import com.jme3.app.state.AppStateManager;
+import com.jme3.asset.AssetManager;
 import com.jme3.audio.AudioNode;
 import com.jme3.bullet.BulletAppState;
 import com.jme3.bullet.PhysicsSpace;
@@ -22,6 +21,8 @@ import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import mygame.enemy.EnemySpawner;
+import mygame.enemy.EnemyType;
 
 /**
  *
@@ -29,29 +30,17 @@ import java.util.concurrent.CopyOnWriteArrayList;
  */
 public class GameLogic extends AbstractAppState {
 
-    Player player;
-    List<Enemy> enemies = new CopyOnWriteArrayList<Enemy>();
-    List<Bullet> bullets = new CopyOnWriteArrayList<Bullet>();
-    List<MagicEffect> effects = new CopyOnWriteArrayList<MagicEffect>();
-    String levelName;
-    Scene gameLevel;
+    private Player player;
+    private List<Enemy> enemies = new CopyOnWriteArrayList<Enemy>();
+    private List<Bullet> bullets = new CopyOnWriteArrayList<Bullet>();
+    private List<MagicEffect> effects = new CopyOnWriteArrayList<MagicEffect>();
+    private List<GameEntity> other = new CopyOnWriteArrayList<GameEntity>();
+    private String levelName;
+    private Scene gameLevel;
     private HUD hud;
-    Main main = Main.get();
-    AudioNode audio_attack;
+    private Main main = Main.get();
+    private AudioNode audio_attack;
     private BulletAppState bulletAppState;
-
-    private void initAudio() {
-        /* gun shot sound is to be triggered by a mouse click. */
-        audio_attack = new AudioNode(main.getAssetManager(), "Sounds/hit-01.wav", false);
-        audio_attack.setLooping(false);
-        audio_attack.setVolume(2);
-        Main.get().getRootNode().attachChild(audio_attack);
-    }
-    
-    AudioNode get_audio_attack()
-    {
-        return audio_attack;
-    }
 
     public GameLogic(String fname) {
         levelName = fname;
@@ -68,7 +57,7 @@ public class GameLogic extends AbstractAppState {
         stateManager.attach(bulletAppState);
         
         //initialize level/scene
-        gameLevel = new Scene(levelName);
+        gameLevel = new Scene(this, levelName);
 
         //create the player with the starting player position at "playerPos" from the scene
         Spatial startLoc = gameLevel.getChild("playerPos");
@@ -79,9 +68,7 @@ public class GameLogic extends AbstractAppState {
         //setup hud
         hud = new HUD(this);
         main.getGuiNode().attachChild(hud);
-
-        //attach level to root node
-        ((SimpleApplication) app).getRootNode().attachChild(gameLevel);
+        addOther(hud);
 
         //attach player and level to physics space
         getPhysicsSpace().addAll(gameLevel);
@@ -93,24 +80,28 @@ public class GameLogic extends AbstractAppState {
         //setup keys:
         setupKeys();
     }
+    
+    private void initAudio() {
+        // gun shot sound is triggered by any weapon firing
+        audio_attack = new AudioNode(main.getAssetManager(), "Sounds/hit-01.wav", false);
+        audio_attack.setLooping(false);
+        audio_attack.setVolume(2);
+        
+        main.getRootNode().attachChild(audio_attack);
+    }
+    
+    public AudioNode getAudioAttack() {
+        return audio_attack;
+    }
 
     public PhysicsSpace getPhysicsSpace() {
         return bulletAppState.getPhysicsSpace();
     }
 
     public void spawnEnemies() {
-        GameLogic game = this;
-        // check for skeletons:
-        String skeleton = "skeleton";
-        for (int ix = 0; ix < 100; ix++) {
-            String search = skeleton + ix;
-            //System.out.println(search);
-            Spatial item = gameLevel.getChild(search);
-            if (item != null) {
-                System.out.println(search);
-                Enemy e = new Enemy(game, Enemy.ENEMYTYPE.SKELETON, item);
-            }
-        }
+        EnemySpawner skeletonSpawner = new EnemySpawner(this, 6, EnemyType.SKELETON);
+        EnemySpawner impSpawner = new EnemySpawner(this, 4, EnemyType.IMP);
+        EnemySpawner frogSpawner = new EnemySpawner(this, 8, EnemyType.FROG);
     }
 
     public void setupKeys() {
@@ -142,8 +133,11 @@ public class GameLogic extends AbstractAppState {
         for (Enemy e : enemies) {
             e.update(tpf);
         }
-
-        hud.update(tpf);
+        
+        for (GameEntity o : other) {
+            o.update(tpf);
+        }
+        //hud.update(tpf);
     }
 
     public void remove(GameEntity entity) {
@@ -193,6 +187,9 @@ public class GameLogic extends AbstractAppState {
             case MagicEffect:
                 addEffect((MagicEffect) entity);
                 break;
+            case Other:
+                addOther((GameEntity) entity);
+                break;
             default:
                 ;
         }
@@ -208,6 +205,10 @@ public class GameLogic extends AbstractAppState {
 
     public void addEffect(MagicEffect eff) {
         effects.add(eff);
+    }
+    
+    public void addOther(GameEntity ent) {
+        other.add(ent);
     }
 
     public Scene getGameLevel() {
@@ -225,6 +226,15 @@ public class GameLogic extends AbstractAppState {
     public Node getRootNode() {
         return main.getRootNode();
     }
+    
+    public AssetManager getAssetManager() {
+        return main.getAssetManager();
+    }
+    
+    public List<Enemy> getEnemies() {
+        return enemies;
+    }
+    
     // BORN: ------------------
     // LIFE: ------------------
     // IMPACT: ----------------

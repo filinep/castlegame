@@ -10,7 +10,7 @@ import com.jme3.ui.Picture;
  * @author filipe
  */
 public class HUD extends GameEntity {
-    private static float DAMAGED_TIME = 3f;
+    private static float MAX_DAMAGED_TIME = 3f;
     private BitmapText health;
     private BitmapText weapon;
     private Picture damageIndicator;
@@ -18,6 +18,7 @@ public class HUD extends GameEntity {
     
     public HUD(GameLogic gl) {
         super(gl);
+        type = TYPE.Other;
         BitmapFont guiFont = Main.get().getGuiFont();
         
         health = new BitmapText(guiFont, false);          
@@ -44,17 +45,17 @@ public class HUD extends GameEntity {
     }
     
     public void setPlayerDamaged() {
-        playerDamaged = DAMAGED_TIME;
+        playerDamaged = MAX_DAMAGED_TIME;
     }
     
     @Override
     public void update(float tpf) {
         weapon.setText("Weapon: " + game.getPlayer().getWeapon().getName().toLowerCase() +
                        "\nAMMO = " + game.getPlayer().getWeapon().getCurrentAmmo());
-        health.setText("Health: " + game.getPlayer().getHealth());
+        health.setText("Health: " + game.getPlayer().getHealth() + "\n" + game.getPlayer().getPhysicsControl().getPhysicsLocation());
         
         damageIndicator.getMaterial().setColor("Color", 
-                                new ColorRGBA(1f, 0f, 0f, .5f - (DAMAGED_TIME - playerDamaged) / (2*DAMAGED_TIME)));
+                                new ColorRGBA(1f, 0f, 0f, .5f - (MAX_DAMAGED_TIME - playerDamaged) / (2*MAX_DAMAGED_TIME)));
         
         if (playerDamaged > 0)
             playerDamaged -= tpf;

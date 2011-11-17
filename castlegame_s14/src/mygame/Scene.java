@@ -16,11 +16,14 @@ import com.jme3.scene.Node;
  *
  * @author filipe
  */
-public class Scene extends Node {
+public class Scene extends GameEntity {
     
-    public Scene(String fname) {
+    public Scene(GameLogic gl, String fname) {
+        super(gl);
+        
         //set the name of the node
-        super("Map");
+        type = TYPE.Other;
+        setName("Map");
 
         //load a scene from the assets and attach it to this node
         this.attachChild((Node) Main.get().getAssetManager().loadModel(fname));
@@ -49,6 +52,8 @@ public class Scene extends Node {
         
         // add a physics control, it will generate a MeshCollisionShape based on the gameLevel
         this.addControl(new RigidBodyControl(0));
+        
+        birth();
     }
     
 }
