@@ -30,7 +30,7 @@ public class Imp extends Enemy {
         
         this.weapons.add(new Weapon(game, Weapon.WeaponType.FIREBALL));
         
-        this.initModel("Models/imptrial1.j3o", RADIUS, HEIGHT);
+        this.initModel("Models/imptrial1/imptrial1.j3o", RADIUS, HEIGHT);
         this.physicsControl.setPhysicsLocation(startLoc);
         physicsControl.setGravity(0f);
     }
