@@ -131,6 +131,10 @@ public class Player extends GameEntity implements ActionListener {
         return weapons.get(activeWeapon);
     }
     
+    public Vector3f getLocation() {
+        return physicsControl.getPhysicsLocation();
+    }
+    
     @Override
     public void damage(int dhp) {
         health -= dhp;

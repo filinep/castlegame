@@ -65,7 +65,7 @@ public class EnemySpawner extends GameEntity {
                                             FastMath.rand.nextFloat() * (max.z - min.z) + min.z);
 
                 //create new enemy and place at random position
-                Enemy e = Enemy.createEnemy(game, loc, EnemyType.SKELETON);
+                Enemy e = Enemy.createEnemy(game, loc, enemyType);
             }
             
             checkInterval = INTERVAL;

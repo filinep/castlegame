@@ -3,6 +3,7 @@ package mygame.enemy;
 import com.jme3.math.FastMath;
 import com.jme3.math.Vector3f;
 import mygame.GameLogic;
+import mygame.Player;
 import mygame.weapon.Weapon;
 
 /**
@@ -21,7 +22,7 @@ public class Skeleton extends Enemy {
         this.walkingRange = 50f;
         this.firingRange = 20f;
         this.walkSpeed = .5f;
-        this.stopShortRange = 20f;
+        this.shootRate = 1f;
         
         this.health = 75;
         this.enemyType = EnemyType.SKELETON;
@@ -35,21 +36,22 @@ public class Skeleton extends Enemy {
     
     @Override
     public void update(float tpf) {
-        //super.update(tpf);
-        shootUpdate(tpf);
-        if (withinWalkingRange())
-        {
-            turningTo(knownPlayerLoc);
-            if (withinStopShortRange())
-                stop();
-            else
-            walkForward();
-        } else
-            stop();
+        // TODO maybe change this to target
+        Player player = game.getPlayer();
         
-        if (withinFiringRange())
-        {
-            attack();
+        shootUpdate(tpf);
+        
+        if (withinRange(walkingRange, player)) {
+            turningTo(player.getLocation());
+            
+            if (withinRange(firingRange, player)) {
+                stop();
+                attack();
+            } else {
+                walkForward();
+            }
+        } else {
+            stop();
         }
     }
 }

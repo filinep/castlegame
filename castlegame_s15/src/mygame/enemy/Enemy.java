@@ -36,8 +36,7 @@ public abstract class Enemy extends GameEntity {
     protected float walkingRange;
     protected float rangeToPlayer;
     protected float walkSpeed;
-    protected float stopShortRange;
-    protected Vector3f knownPlayerLoc;
+    protected float shootRate;
 
     public static Enemy createEnemy(GameLogic gl, Vector3f startLoc, EnemyType type) {
         switch (type) {
@@ -150,30 +149,15 @@ public abstract class Enemy extends GameEntity {
             shootDelay -= tpf;
         }
     }
-
-    public float getRangeToPlayer() {
-        knownPlayerLoc = game.getPlayer().getPhysicsControl().getPhysicsLocation();
-        return rangeToPlayer = knownPlayerLoc.distance(physicsControl.getPhysicsLocation());
-    }
-
-    public boolean withinStopShortRange() {
-        if (getRangeToPlayer() < stopShortRange) {
+    
+    public boolean withinRange(float distance, GameEntity entity) {
+        CharacterControl control = entity.getControl(CharacterControl.class);
+        float dist = control.getPhysicsLocation().distanceSquared(physicsControl.getPhysicsLocation());
+        
+        if (dist <= distance * distance) {
             return true;
         }
-        return false;
-    }
-
-    public boolean withinFiringRange() {
-        if (getRangeToPlayer() < firingRange) {
-            return true;
-        }
-        return false;
-    }
-
-    public boolean withinWalkingRange() {
-        if (getRangeToPlayer() < walkingRange) {
-            return true;
-        }
+        
         return false;
     }
 
@@ -183,7 +167,7 @@ public abstract class Enemy extends GameEntity {
     }
 
     public void stop() {
-        walkDirection = new Vector3f(0f, 0f, 0f);
+        walkDirection.set(0f, 0f, 0f);
         physicsControl.setWalkDirection(walkDirection);
     }
 
@@ -209,12 +193,16 @@ public abstract class Enemy extends GameEntity {
         Quaternion diff1 = new Quaternion();
         Quaternion diff2 = new Quaternion();
         Quaternion diff3 = new Quaternion();
+        
         Vector3f newOrient = target.subtract(physicsControl.getPhysicsLocation());
         Vector3f curOrient = physicsControl.getViewDirection();
+        
         diff1.lookAt(newOrient, Vector3f.UNIT_Y);
         diff2.lookAt(curOrient, Vector3f.UNIT_Y);
         diff3 = diff2.subtract(diff1);
+        
         float ydiff = diff3.getY();
+        
         if (FastMath.abs(ydiff) > turnRate) {
             if (ydiff < 0) {
                 turnRight();
@@ -233,7 +221,7 @@ public abstract class Enemy extends GameEntity {
     public void attack() {
         if (shootDelay < 0f) {
             useWeapon();
-            shootDelay = 1f;
+            shootDelay = shootRate;
         }
     }
 
