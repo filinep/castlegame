@@ -39,7 +39,6 @@ public class GameLogic extends AbstractAppState {
     private Scene gameLevel;
     private HUD hud;
     private Main main = Main.get();
-    private AudioNode audio_attack;
     private BulletAppState bulletAppState;
 
     public GameLogic(String fname) {
@@ -49,8 +48,6 @@ public class GameLogic extends AbstractAppState {
     @Override
     public void initialize(AppStateManager stateManager, Application app) {
         super.initialize(stateManager, app);
-        
-        initAudio();
         
         //setup physics state manager
         bulletAppState = new BulletAppState();
@@ -79,19 +76,6 @@ public class GameLogic extends AbstractAppState {
 
         //setup keys:
         setupKeys();
-    }
-    
-    private void initAudio() {
-        // gun shot sound is triggered by any weapon firing
-        audio_attack = new AudioNode(main.getAssetManager(), "Sounds/hit-01.wav", false);
-        audio_attack.setLooping(false);
-        audio_attack.setVolume(2);
-        
-        main.getRootNode().attachChild(audio_attack);
-    }
-    
-    public AudioNode getAudioAttack() {
-        return audio_attack;
     }
 
     public PhysicsSpace getPhysicsSpace() {

@@ -59,9 +59,6 @@ public class Weapon extends GameEntity {
 
     public void fire(Vector3f from, Vector3f to) {
         if (currentAmmo == INFINITY || currentAmmo > 0) {
-            game.getAudioAttack().setLocalTranslation(from);
-            game.getAudioAttack().playInstance();
-            
             if (isMagic) {
                 MagicEffect me = new MagicEffect(game, from);
             } else {

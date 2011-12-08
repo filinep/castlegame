@@ -1,24 +1,23 @@
 package mygame;
 
+import com.jme3.audio.AudioNode;
 import mygame.weapon.Weapon;
 import com.jme3.bullet.collision.shapes.CapsuleCollisionShape;
 import com.jme3.bullet.control.CharacterControl;
 import com.jme3.bullet.objects.PhysicsCharacter;
 import com.jme3.input.controls.ActionListener;
-import com.jme3.math.FastMath;
-import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.Camera;
 import com.jme3.scene.Spatial;
 import java.util.ArrayList;
 import java.util.List;
 
-
 /**
  *
  * @author filipe
  */
 public class Player extends GameEntity implements ActionListener {
+    private enum Actions {Walk}
 
     private CharacterControl physicsControl;
     private boolean left = false, right = false, up = false, down = false;
@@ -35,14 +34,10 @@ public class Player extends GameEntity implements ActionListener {
         this.physicsControl.setFallSpeed(30);
         this.physicsControl.setGravity(30);
         
-        setName("Player");
-        addControl(physicsControl);
+        this.setName("Player");
+        this.addControl(physicsControl);
         this.physicsControl.setPhysicsLocation(startLoc.getWorldTranslation());
         
-        Camera cam = Main.get().getCamera();
-        float[] angles = {0f, FastMath.HALF_PI, 0f};
-        cam.setRotation(new Quaternion(angles));
-
         this.walkDirection = new Vector3f();
         
         this.weapons.add(new Weapon(game, Weapon.WeaponType.RANGED));
@@ -53,6 +48,13 @@ public class Player extends GameEntity implements ActionListener {
         
         this.activeWeapon = 0;
         this.health = 100;
+        
+        AudioNode audioNode = new AudioNode(game.getAssetManager(), "Sounds/running.wav", false);
+        audioNode.setName("playerWalkAudio");
+        audioNode.setLooping(true);
+        audioNode.setVolume(2);
+        this.attachChild(audioNode);
+        audioNode.play();
         
         birth();
     }
@@ -90,13 +92,16 @@ public class Player extends GameEntity implements ActionListener {
         //change weapon with mouse wheel
         if (binding.equals("WeaponNext")) {
             activeWeapon++;
+            
             if (activeWeapon >= Weapon.TOTALWEAPONS)
                 activeWeapon = 0;
         } else if (binding.equals("WeaponPrev")) {
             activeWeapon--;
-            if (activeWeapon < 0)
+            
+            if (activeWeapon < 0) {
                 activeWeapon = Weapon.TOTALWEAPONS-1;
             }
+        }
     }
 
     @Override
@@ -104,6 +109,10 @@ public class Player extends GameEntity implements ActionListener {
         Camera camera = Main.get().getCamera();
         Vector3f camDir = camera.getDirection().clone().multLocal(.6f);
         Vector3f camLeft = camera.getLeft().clone().multLocal(.4f);
+        
+        Main.get().getListener().setLocation(camera.getLocation());
+        Main.get().getListener().setRotation(camera.getRotation());
+        
         walkDirection.set(0, 0, 0);
 
         if (left) {
@@ -121,6 +130,12 @@ public class Player extends GameEntity implements ActionListener {
 
         physicsControl.setWalkDirection(walkDirection);
         camera.setLocation(physicsControl.getPhysicsLocation());
+        
+        if (Vector3f.ZERO.distanceSquared(walkDirection) == 0f) {
+            ((AudioNode) getChild("playerWalkAudio")).pause();
+        } else {
+            ((AudioNode) getChild("playerWalkAudio")).play();
+        }
     }
 
     public int getHealth() {

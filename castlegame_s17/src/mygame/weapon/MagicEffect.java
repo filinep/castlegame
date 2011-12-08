@@ -1,5 +1,6 @@
 package mygame.weapon;
 
+import com.jme3.audio.AudioNode;
 import com.jme3.effect.ParticleEmitter;
 import com.jme3.effect.ParticleMesh;
 import com.jme3.material.Material;
@@ -7,15 +8,14 @@ import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector3f;
 import mygame.GameEntity;
 import mygame.GameLogic;
-import mygame.Main;
 
 /**
  *
  * @author scott
  */
 public class MagicEffect extends GameEntity {
+    private static long DURATION = 2000;
     private long start;
-    private boolean done = false;
     
     MagicEffect(GameLogic gl, Vector3f loc) {
         super(gl);
@@ -26,9 +26,9 @@ public class MagicEffect extends GameEntity {
 
         ParticleEmitter fire =
                 new ParticleEmitter("Emitter", ParticleMesh.Type.Triangle, 30);
-        Material mat_red = new Material(Main.get().getAssetManager(),
+        Material mat_red = new Material(game.getAssetManager(),
                 "Common/MatDefs/Misc/Particle.j3md");
-        mat_red.setTexture("Texture", Main.get().getAssetManager().loadTexture(
+        mat_red.setTexture("Texture", game.getAssetManager().loadTexture(
                 "Textures/debris.png"));
         fire.setMaterial(mat_red);
         fire.setImagesX(2);
@@ -47,9 +47,9 @@ public class MagicEffect extends GameEntity {
 
         ParticleEmitter debris =
                 new ParticleEmitter("Debris", ParticleMesh.Type.Triangle, 10);
-        Material debris_mat = new Material(Main.get().getAssetManager(),
+        Material debris_mat = new Material(game.getAssetManager(),
                 "Common/MatDefs/Misc/Particle.j3md");
-        debris_mat.setTexture("Texture", Main.get().getAssetManager().loadTexture(
+        debris_mat.setTexture("Texture", game.getAssetManager().loadTexture(
                 "Textures/debris.png"));
         debris.setMaterial(debris_mat);
         debris.setImagesX(3);
@@ -66,12 +66,19 @@ public class MagicEffect extends GameEntity {
         debris.emitAllParticles();
 
         start = System.currentTimeMillis();
+        
         birth();
+        
+        AudioNode audio = new AudioNode(game.getAssetManager(), "Sounds/magic.wav", false);
+        audio.setLooping(false);
+        audio.setVolume(2);
+        this.attachChild(audio);
+        audio.playInstance();
     }
 
     @Override
     public void update (float tpf) {
-        if ((start + 2000) < (System.currentTimeMillis())) {
+        if ((start + DURATION) < (System.currentTimeMillis())) {
             kill();
         }
     }

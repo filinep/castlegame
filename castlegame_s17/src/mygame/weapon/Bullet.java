@@ -1,5 +1,6 @@
 package mygame.weapon;
 
+import com.jme3.audio.AudioNode;
 import com.jme3.bullet.collision.shapes.CollisionShape;
 import com.jme3.bullet.collision.shapes.CylinderCollisionShape;
 import com.jme3.bullet.collision.shapes.SphereCollisionShape;
@@ -37,39 +38,41 @@ public class Bullet extends GameEntity {
         super(gl);
         type = TYPE.Bullet;
         bulletType = bt;
+        AudioNode audio = null;
+        int volumeFactor = 1;
         
-        switch (bt) {
+        //TODO: change audio sound files below
+        switch (bulletType) {
             case MELEE:
                 init(
                         ColorRGBA.Red, (Mesh) (new Sphere(3, 4, 1)),
                         (CollisionShape) (new SphereCollisionShape(.2f)), 1);
                 damage = 50;
+                audio = new AudioNode(game.getAssetManager(), "Sounds/hit-01.wav", false);
                 break;
             case RANGED:
                 init(
                         ColorRGBA.Brown, new Cylinder(10, 5, .5f, 10f, true, false), new CylinderCollisionShape(new Vector3f(.25f, 5f, .25f)), 10);
                 damage = 10;
+                audio = new AudioNode(game.getAssetManager(), "Sounds/hit-01.wav", false);
                 break;
             case FIREBALL:
                 init(
                         ColorRGBA.Yellow, new Sphere(3, 4, 1), new SphereCollisionShape(.2f), 20);
                 damage = 25;
-                break;
-            case HEALING:
-                init(
-                        ColorRGBA.Blue, new Sphere(8, 8, 3), new SphereCollisionShape(.2f), 3);
-                damage = -10; //???
-                break;
-            case LIGHTING:
-                init(
-                        ColorRGBA.Green, new Sphere(8, 8, 3), new SphereCollisionShape(.2f), 3);
-                damage = 0; //???
+                audio = new AudioNode(game.getAssetManager(), "Sounds/fireball.wav", false);
+                volumeFactor = 4;
                 break;
             default:
                 ;
         }
+        
+        audio.setLooping(false);
+        audio.setVolume(2 * volumeFactor);
+        attachChild(audio);
 
         birth();
+        move(from);
         
         Vector3f z = to.subtract(from).normalize();
         Vector3f x = new Vector3f(z.z, 0f, -z.x).normalize();
@@ -78,6 +81,8 @@ public class Bullet extends GameEntity {
         bulletControl.setPhysicsRotation(new Quaternion().fromAxes(x, y, z));
         bulletControl.setPhysicsLocation(from);
         bulletControl.setLinearVelocity(z.mult(speed));
+        
+        audio.playInstance();
     }
 
     public final void init(ColorRGBA color, Mesh mesh, CollisionShape physicsShape, int range) {
@@ -92,7 +97,7 @@ public class Bullet extends GameEntity {
         bulletControl.setGravity(Vector3f.ZERO);
         
         getPhysicsSpace().add(bulletControl);
-        geometry.addControl(bulletControl);
+        addControl(bulletControl);
         attachChild(geometry);
     }
     
